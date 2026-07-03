@@ -1,12 +1,12 @@
-package com.mrtrazan.minecraft.codexassistant;
+package com.mrtrazan.minecraft.pvphelper;
 
-import com.mrtrazan.minecraft.codexassistant.config.ModConfig;
+import com.mrtrazan.minecraft.pvphelper.config.ModConfig;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.widget.TextFieldWidget;
 import net.minecraft.text.Text;
-import com.mrtrazan.minecraft.codexassistant.ai.OpenAIClient;
+import com.mrtrazan.minecraft.pvphelper.ai.OpenAIClient;
 import java.util.concurrent.CompletableFuture;
 
 public class ModConfigScreen extends Screen {
@@ -24,7 +24,7 @@ public class ModConfigScreen extends Screen {
     private int statusTicks;
 
     protected ModConfigScreen(Screen parent) {
-        super(Text.literal("Codex Assistant Settings"));
+        super(Text.literal("PvP Helper Settings"));
         this.parent = parent;
     }
 
@@ -106,7 +106,7 @@ public class ModConfigScreen extends Screen {
                     }
                     this.statusText = Text.literal(message);
                     this.statusTicks = 140;
-                    System.out.println("[Codex Assistant] " + message);
+                    System.out.println("[PvP Helper] " + message);
                 });
             });
         }).dimensions(mid - 150, y + 170, 140, 20).build());
@@ -134,7 +134,7 @@ public class ModConfigScreen extends Screen {
         int y = 50;
         context.fill(mid - 160, y - 8, mid + 160, y + 220, 0xCC000000);
 
-        context.drawText(this.textRenderer, Text.literal("Codex Assistant Settings"), mid - 70, 20, 0xFFFFFF, false);
+        context.drawText(this.textRenderer, Text.literal("PvP Helper Settings"), mid - 70, 20, 0xFFFFFF, false);
         context.drawText(this.textRenderer, Text.literal("OpenAI API Key  (platform.openai.com → API keys):"), mid - 150, y - 12, 0xAAAAAA, false);
         context.drawText(this.textRenderer, Text.literal("OpenAI API URL  (leave blank for default):"), mid - 150, y + 16, 0xAAAAAA, false);
         context.drawText(this.textRenderer, Text.literal("Gemini API Key  (aistudio.google.com → Get API key):"), mid - 150, y + 44, 0xAAAAAA, false);

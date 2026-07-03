@@ -1,4 +1,4 @@
-package com.mrtrazan.minecraft.codexassistant.ai;
+package com.mrtrazan.minecraft.pvphelper.ai;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -31,7 +31,7 @@ public class ChatGPTInventoryEngine {
 
         String localResult = "LOCAL_OPTIMIZED";
 
-        if (com.mrtrazan.minecraft.codexassistant.config.ModConfig.getInstance().enableChatGPT && OpenAIClient.hasApiKey(false) && shouldRequestAnalysis()) {
+        if (com.mrtrazan.minecraft.pvphelper.config.ModConfig.getInstance().enableChatGPT && OpenAIClient.hasApiKey(false) && shouldRequestAnalysis()) {
             String systemPrompt = "You are ChatGPT, a Minecraft inventory and block management assistant. " +
                 "You have FULL ACCESS to player inventory, health, armor, hunger, and all items. " +
                 "Analyze everything and recommend optimal inventory organization and resource priorities.";
@@ -209,7 +209,7 @@ public class ChatGPTInventoryEngine {
 
         String localResult = "RESOURCE_ANALYSIS_REQUESTED";
 
-        if (com.mrtrazan.minecraft.codexassistant.config.ModConfig.getInstance().enableChatGPT && OpenAIClient.hasApiKey(false) && shouldRequestAnalysis()) {
+        if (com.mrtrazan.minecraft.pvphelper.config.ModConfig.getInstance().enableChatGPT && OpenAIClient.hasApiKey(false) && shouldRequestAnalysis()) {
             String systemPrompt = "You are ChatGPT, a Minecraft resource analysis and survival strategy assistant. " +
                 "You have FULL ACCESS to all inventory, health, armor, hunger, and biome data. " +
                 "Provide strategic recommendations for resource gathering, defense, crafting, and survival priorities.";

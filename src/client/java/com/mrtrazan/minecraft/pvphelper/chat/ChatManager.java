@@ -1,8 +1,8 @@
-package com.mrtrazan.minecraft.codexassistant.chat;
+package com.mrtrazan.minecraft.pvphelper.chat;
 
-import com.mrtrazan.minecraft.codexassistant.ai.ActionPermissionManager;
-import com.mrtrazan.minecraft.codexassistant.ai.ConversationManager;
-import com.mrtrazan.minecraft.codexassistant.ai.OpenAIClient;
+import com.mrtrazan.minecraft.pvphelper.ai.ActionPermissionManager;
+import com.mrtrazan.minecraft.pvphelper.ai.ConversationManager;
+import com.mrtrazan.minecraft.pvphelper.ai.OpenAIClient;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
@@ -74,8 +74,8 @@ public class ChatManager {
             "You are Gemini, a Minecraft PvP and physical block action assistant. Keep replies short and actionable. Propose in-game actions using [ACTION: ...] tags: [ACTION: RUN_COMMAND <cmd>], [ACTION: PLACE_BLOCK <x> <y> <z> <block>], [ACTION: BREAK_BLOCK <x> <y> <z>], [ACTION: SPAWN_BOT], [ACTION: REMOVE_BOT]." :
             "You are ChatGPT/OpenAI, a Minecraft inventory manager and resource planner assistant. Keep replies short and actionable. Propose in-game actions using [ACTION: ...] tags: [ACTION: RUN_COMMAND <cmd>], [ACTION: PLACE_BLOCK <x> <y> <z> <block>], [ACTION: BREAK_BLOCK <x> <y> <z>], [ACTION: SPAWN_BOT], [ACTION: REMOVE_BOT].";
 
-        com.mrtrazan.minecraft.codexassistant.config.ModConfig cfg =
-            com.mrtrazan.minecraft.codexassistant.config.ModConfig.getInstance();
+        com.mrtrazan.minecraft.pvphelper.config.ModConfig cfg =
+            com.mrtrazan.minecraft.pvphelper.config.ModConfig.getInstance();
 
         String apiKey = isGemini ? cfg.geminiApiKey : cfg.openAiApiKey;
         String apiUrl = isGemini ? cfg.geminiApiUrl : cfg.openAiApiUrl;
@@ -130,8 +130,8 @@ public class ChatManager {
             "You are Gemini, a Minecraft PvP and physical block action assistant. Keep replies short and actionable. Propose in-game actions using [ACTION: ...] tags: [ACTION: RUN_COMMAND <cmd>], [ACTION: PLACE_BLOCK <x> <y> <z> <block>], [ACTION: BREAK_BLOCK <x> <y> <z>], [ACTION: SPAWN_BOT], [ACTION: REMOVE_BOT]." :
             "You are ChatGPT/OpenAI, a Minecraft inventory manager and resource planner assistant. Keep replies short and actionable. Propose in-game actions using [ACTION: ...] tags: [ACTION: RUN_COMMAND <cmd>], [ACTION: PLACE_BLOCK <x> <y> <z> <block>], [ACTION: BREAK_BLOCK <x> <y> <z>], [ACTION: SPAWN_BOT], [ACTION: REMOVE_BOT].";
 
-        com.mrtrazan.minecraft.codexassistant.config.ModConfig cfg =
-            com.mrtrazan.minecraft.codexassistant.config.ModConfig.getInstance();
+        com.mrtrazan.minecraft.pvphelper.config.ModConfig cfg =
+            com.mrtrazan.minecraft.pvphelper.config.ModConfig.getInstance();
 
         String apiKey = isGemini ? cfg.geminiApiKey : cfg.openAiApiKey;
         String apiUrl = isGemini ? cfg.geminiApiUrl : cfg.openAiApiUrl;
@@ -192,7 +192,7 @@ public class ChatManager {
             }
         }
         // Include PvP hit analysis summary
-        ctx.append("\n").append(com.mrtrazan.minecraft.codexassistant.ai.GeminiPvPEngine.getCombatHistorySummary());
+        ctx.append("\n").append(com.mrtrazan.minecraft.pvphelper.ai.GeminiPvPEngine.getCombatHistorySummary());
 
         sendUserMessageFromCommand(ctx.toString(), false);
     }
@@ -237,7 +237,7 @@ public class ChatManager {
     // ── Status string ─────────────────────────────────────────────────────────
 
     public static String getStatus() {
-        var cfg = com.mrtrazan.minecraft.codexassistant.config.ModConfig.getInstance();
+        var cfg = com.mrtrazan.minecraft.pvphelper.config.ModConfig.getInstance();
         return "Dual AI: Gemini=" + (cfg.enableGemini  ? "ON" : "OFF")
              + ", ChatGPT="       + (cfg.enableChatGPT ? "ON" : "OFF");
     }

@@ -1,4 +1,4 @@
-package com.mrtrazan.minecraft.codexassistant;
+package com.mrtrazan.minecraft.pvphelper;
 
 import com.terraformersmc.modmenu.api.ConfigScreenFactory;
 import com.terraformersmc.modmenu.api.ModMenuApi;
@@ -9,6 +9,6 @@ public class ModMenuProvider implements ModMenuApi {
 
     @Override
     public ConfigScreenFactory<Screen> getModConfigScreenFactory() {
-        return parent -> new com.mrtrazan.minecraft.codexassistant.ModConfigScreen(parent);
+        return parent -> new com.mrtrazan.minecraft.pvphelper.ModConfigScreen(parent);
     }
 }

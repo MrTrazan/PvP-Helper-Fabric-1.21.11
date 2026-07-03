@@ -20,10 +20,10 @@ repositories {
 loom {
 	splitEnvironmentSourceSets()
 	getEnableTransitiveAccessWideners().set(false)
-	accessWidenerPath = file("src/main/resources/codex_assistant.accesswidener")
+	accessWidenerPath = file("src/main/resources/pvp_helper.accesswidener")
 
 	mods {
-		"codex_assistant" {
+		"pvp_helper" {
 			sourceSet sourceSets.main
 			sourceSet sourceSets.client
 		}

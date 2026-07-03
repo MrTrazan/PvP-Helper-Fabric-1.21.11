@@ -1,7 +1,7 @@
-package com.mrtrazan.minecraft.codexassistant.chat;
+package com.mrtrazan.minecraft.pvphelper.chat;
 
-import com.mrtrazan.minecraft.codexassistant.ai.DualAICoordinator;
-import com.mrtrazan.minecraft.codexassistant.config.ModConfig;
+import com.mrtrazan.minecraft.pvphelper.ai.DualAICoordinator;
+import com.mrtrazan.minecraft.pvphelper.config.ModConfig;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.text.Text;

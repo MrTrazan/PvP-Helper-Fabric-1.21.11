@@ -1,6 +1,6 @@
-package com.mrtrazan.minecraft.codexassistant.chat;
+package com.mrtrazan.minecraft.pvphelper.chat;
 
-import com.mrtrazan.minecraft.codexassistant.ai.OpenAIClient;
+import com.mrtrazan.minecraft.pvphelper.ai.OpenAIClient;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
@@ -17,7 +17,7 @@ public class ChatScreen extends Screen {
     private int scrollOffset = 0;
 
     public ChatScreen() {
-        super(Text.literal("Codex Assistant Chat"));
+        super(Text.literal("PvP Helper Chat"));
     }
 
     protected void init() {
@@ -70,7 +70,7 @@ public class ChatScreen extends Screen {
         context.fill(left - 2, top - 2, right + 2, bottom + 2, 0xCC000000);
         context.fill(left, top, right, bottom, 0x88000000);
 
-        context.drawText(this.textRenderer, Text.literal("Codex Assistant Chat"), left + 5, top + 5, 0xFFFFFF, false);
+        context.drawText(this.textRenderer, Text.literal("PvP Helper Chat"), left + 5, top + 5, 0xFFFFFF, false);
         
         List<String> msgs = ChatManager.getMessages();
         int visibleLines = getVisibleLines();
@@ -82,7 +82,7 @@ public class ChatScreen extends Screen {
             context.drawText(this.textRenderer, Text.literal("U DIDN'T ADD API PLZ ADD IT"), left + 5, top + 44, 0xFF5555, false);
             context.drawText(this.textRenderer, Text.literal("WHY?"), left + 5, top + 56, 0xFFAA00, false);
             context.drawText(this.textRenderer, Text.literal("U DIDN'T ADD OK? ADD NOW"), left + 5, top + 68, 0xFF5555, false);
-            context.drawText(this.textRenderer, Text.literal("Go to Mod Menu -> Codex Assistant Settings -> Add OpenAI API Key"), left + 5, top + 82, 0x00FFFF, false);
+            context.drawText(this.textRenderer, Text.literal("Go to Mod Menu -> PvP Helper Settings -> Add OpenAI API Key"), left + 5, top + 82, 0x00FFFF, false);
             
             int startIndex = Math.max(0, msgs.size() - visibleLines - scrollOffset);
             int endIndex = Math.max(0, msgs.size() - scrollOffset);

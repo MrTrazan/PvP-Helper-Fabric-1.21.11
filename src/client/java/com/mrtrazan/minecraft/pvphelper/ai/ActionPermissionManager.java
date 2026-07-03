@@ -1,4 +1,4 @@
-package com.mrtrazan.minecraft.codexassistant.ai;
+package com.mrtrazan.minecraft.pvphelper.ai;
 
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.text.ClickEvent;
@@ -36,12 +36,12 @@ public class ActionPermissionManager {
         pendingActions.put(id, action);
 
         MinecraftClient client = MinecraftClient.getInstance();
-        boolean autoAccept = com.mrtrazan.minecraft.codexassistant.config.ModConfig.getInstance().autoAcceptActions;
+        boolean autoAccept = com.mrtrazan.minecraft.pvphelper.config.ModConfig.getInstance().autoAcceptActions;
 
         if (autoAccept) {
             if (client.player != null) {
                 client.player.sendMessage(
-                    Text.literal("[Codex AI] Auto-executing Action: " + action.getDescription())
+                    Text.literal("[PvP AI] Auto-executing Action: " + action.getDescription())
                         .formatted(Formatting.GREEN), false);
             }
             client.execute(() -> {
@@ -51,7 +51,7 @@ public class ActionPermissionManager {
                 }
             });
         } else if (client.player != null) {
-            MutableText header   = Text.literal("[Codex AI] Proposing Action: ").formatted(Formatting.GOLD);
+            MutableText header   = Text.literal("[PvP AI] Proposing Action: ").formatted(Formatting.GOLD);
             MutableText descText = Text.literal(action.getDescription()).formatted(Formatting.YELLOW);
 
             MutableText acceptText = Text.literal(" [ACCEPT] ").setStyle(Style.EMPTY
@@ -78,7 +78,7 @@ public class ActionPermissionManager {
             MinecraftClient client = MinecraftClient.getInstance();
             if (client.player != null) {
                 client.player.sendMessage(
-                    Text.literal("[Codex AI] Action approved and executing: " + action.getDescription())
+                    Text.literal("[PvP AI] Action approved and executing: " + action.getDescription())
                         .formatted(Formatting.GREEN), false);
             }
             client.execute(() -> action.execute(client));
@@ -93,7 +93,7 @@ public class ActionPermissionManager {
             MinecraftClient client = MinecraftClient.getInstance();
             if (client.player != null) {
                 client.player.sendMessage(
-                    Text.literal("[Codex AI] Action rejected: " + action.getDescription())
+                    Text.literal("[PvP AI] Action rejected: " + action.getDescription())
                         .formatted(Formatting.RED), false);
             }
             return true;
@@ -148,7 +148,7 @@ public class ActionPermissionManager {
                             }
                         });
                     } catch (Exception e) {
-                        System.out.println("[Codex AI] Failed to parse PLACE_BLOCK action: " + args);
+                        System.out.println("[PvP AI] Failed to parse PLACE_BLOCK action: " + args);
                     }
                 }
                 case "BREAK_BLOCK" -> {
@@ -170,7 +170,7 @@ public class ActionPermissionManager {
                             }
                         });
                     } catch (Exception e) {
-                        System.out.println("[Codex AI] Failed to parse BREAK_BLOCK action: " + args);
+                        System.out.println("[PvP AI] Failed to parse BREAK_BLOCK action: " + args);
                     }
                 }
                 case "SPAWN_BOT" -> proposeAction(new AIAction() {
@@ -181,7 +181,7 @@ public class ActionPermissionManager {
                     @Override public String getDescription() { return "Remove Copper Golem Bot"; }
                     @Override public void execute(MinecraftClient c) { CopperBotManager.removeBot(c); }
                 });
-                default -> System.out.println("[Codex AI] Unknown action type from AI: " + type);
+                default -> System.out.println("[PvP AI] Unknown action type from AI: " + type);
             }
         }
     }

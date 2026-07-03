@@ -1,4 +1,4 @@
-package com.mrtrazan.minecraft.codexassistant.config;
+package com.mrtrazan.minecraft.pvphelper.config;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
@@ -13,7 +13,7 @@ import java.nio.file.Path;
 public class ModConfig {
 
     private static final Gson GSON = new Gson();
-    private static final Path CONFIG_PATH = FabricLoader.getInstance().getConfigDir().resolve("codex_assistant_config.json");
+    private static final Path CONFIG_PATH = FabricLoader.getInstance().getConfigDir().resolve("pvp_helper_config.json");
     private static final ModConfig INSTANCE = new ModConfig();
 
     public String openAiApiKey = "";

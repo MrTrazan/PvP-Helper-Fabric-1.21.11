@@ -1,4 +1,4 @@
-package com.mrtrazan.minecraft.codexassistant.ai;
+package com.mrtrazan.minecraft.pvphelper.ai;
 
 import java.util.ArrayDeque;
 import java.util.Deque;

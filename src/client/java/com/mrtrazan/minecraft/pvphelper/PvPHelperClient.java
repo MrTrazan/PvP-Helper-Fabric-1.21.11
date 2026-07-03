@@ -1,4 +1,4 @@
-package com.mrtrazan.minecraft.codexassistant;
+package com.mrtrazan.minecraft.pvphelper;
 
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
@@ -7,11 +7,11 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.util.InputUtil;
 import org.lwjgl.glfw.GLFW;
-import com.mrtrazan.minecraft.codexassistant.ai.DualAICoordinator;
-import com.mrtrazan.minecraft.codexassistant.ai.OpenAIClient;
-import com.mrtrazan.minecraft.codexassistant.config.ModConfig;
+import com.mrtrazan.minecraft.pvphelper.ai.DualAICoordinator;
+import com.mrtrazan.minecraft.pvphelper.ai.OpenAIClient;
+import com.mrtrazan.minecraft.pvphelper.config.ModConfig;
 
-public class CodexAssistantClient implements ClientModInitializer {
+public class PvPHelperClient implements ClientModInitializer {
 
     private KeyBinding openChatKey;
     private KeyBinding panicKey;
@@ -19,14 +19,14 @@ public class CodexAssistantClient implements ClientModInitializer {
 
     @Override
     public void onInitializeClient() {
-        System.out.println("[Codex Assistant Client] Initializing dual AI system...");
+        System.out.println("[PvP Helper Client] Initializing dual AI system...");
 
         ModConfig.load();
 
         // Register a keybinding for opening the chat (J)
         try {
             openChatKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
-                "key.codex_assistant.open_chat",
+                "key.pvp_helper.open_chat",
                 InputUtil.Type.KEYSYM,
                 GLFW.GLFW_KEY_J,
                 KeyBinding.Category.MISC
@@ -38,7 +38,7 @@ public class CodexAssistantClient implements ClientModInitializer {
         // Register panic key (disable all AI actions)
         try {
             panicKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
-                "key.codex_assistant.panic",
+                "key.pvp_helper.panic",
                 InputUtil.Type.KEYSYM,
                 GLFW.GLFW_KEY_P,
                 KeyBinding.Category.MISC
@@ -55,7 +55,7 @@ public class CodexAssistantClient implements ClientModInitializer {
             String lower = trimmed.toLowerCase();
             if (lower.startsWith("openai ") || lower.startsWith("gemini ")) {
                 MinecraftClient.getInstance().execute(() -> {
-                    com.mrtrazan.minecraft.codexassistant.chat.ChatManager.sendUserMessageFromCommand(trimmed, true);
+                    com.mrtrazan.minecraft.pvphelper.chat.ChatManager.sendUserMessageFromCommand(trimmed, true);
                 });
                 return false; // prevent sending to the server
             }
@@ -64,14 +64,14 @@ public class CodexAssistantClient implements ClientModInitializer {
 
         // HUD overlay render
         net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback.EVENT.register((context, tickDelta) -> {
-            com.mrtrazan.minecraft.codexassistant.chat.ChatOverlay.render(context);
-            com.mrtrazan.minecraft.codexassistant.chat.DebugOverlay.render(context);
+            com.mrtrazan.minecraft.pvphelper.chat.ChatOverlay.render(context);
+            com.mrtrazan.minecraft.pvphelper.chat.DebugOverlay.render(context);
         });
 
         // Try to register /cai later when the client dispatcher becomes available.
         // We'll attempt registration in the client tick handler so it works when the dispatcher is ready.
 
-        System.out.println("[Codex Assistant Client] Dual AI system ready!");
+        System.out.println("[PvP Helper Client] Dual AI system ready!");
         System.out.println("  - Gemini: PvP Combat Management");
         System.out.println("  - ChatGPT: Inventory & Block Management");
         System.out.println("  - OpenAI API: " + (OpenAIClient.hasApiKey() ? "enabled" : "disabled"));
@@ -100,7 +100,7 @@ public class CodexAssistantClient implements ClientModInitializer {
                                 MinecraftClient.getInstance().execute(() -> {
                                     if (MinecraftClient.getInstance().player != null) {
                                         MinecraftClient.getInstance().player.sendMessage(
-                                            net.minecraft.text.Text.literal("§e[Codex AI] Commands:\n§7  openai <msg> §f- Ask ChatGPT\n§7  gemini <msg> §f- Ask Gemini\n§7  /cai ask <msg>\n§7  /cai ask status\n§7  /cai ask look\n§7  /spawnAI §for §7/spawnbot §f- Spawn Copper Golem bot\n§7  /removeAI §f- Remove bot\n§7  P key §f- Panic toggle (disable AI)"), false);
+                                            net.minecraft.text.Text.literal("§e[PvP AI] Commands:\n§7  openai <msg> §f- Ask ChatGPT\n§7  gemini <msg> §f- Ask Gemini\n§7  /cai ask <msg>\n§7  /cai ask status\n§7  /cai ask look\n§7  /spawnAI §for §7/spawnbot §f- Spawn Copper Golem bot\n§7  /removeAI §f- Remove bot\n§7  P key §f- Panic toggle (disable AI)"), false);
                                     }
                                 });
                                 return 1;
@@ -109,7 +109,7 @@ public class CodexAssistantClient implements ClientModInitializer {
                                 .then(net.fabricmc.fabric.api.client.command.v2.ClientCommandManager.literal("status")
                                     .executes(ctx -> {
                                         MinecraftClient.getInstance().execute(() -> {
-                                            com.mrtrazan.minecraft.codexassistant.chat.ChatManager.askStatus();
+                                            com.mrtrazan.minecraft.pvphelper.chat.ChatManager.askStatus();
                                         });
                                         return 1;
                                     })
@@ -117,7 +117,7 @@ public class CodexAssistantClient implements ClientModInitializer {
                                 .then(net.fabricmc.fabric.api.client.command.v2.ClientCommandManager.literal("look")
                                     .executes(ctx -> {
                                         MinecraftClient.getInstance().execute(() -> {
-                                            com.mrtrazan.minecraft.codexassistant.chat.ChatManager.askLook();
+                                            com.mrtrazan.minecraft.pvphelper.chat.ChatManager.askLook();
                                         });
                                         return 1;
                                     })
@@ -126,7 +126,7 @@ public class CodexAssistantClient implements ClientModInitializer {
                                     .executes(ctx -> {
                                         String message = com.mojang.brigadier.arguments.StringArgumentType.getString(ctx, "message");
                                         MinecraftClient.getInstance().execute(() -> {
-                                            com.mrtrazan.minecraft.codexassistant.chat.ChatManager.sendUserMessageFromCommand(message);
+                                            com.mrtrazan.minecraft.pvphelper.chat.ChatManager.sendUserMessageFromCommand(message);
                                         });
                                         return 1;
                                     })
@@ -137,7 +137,7 @@ public class CodexAssistantClient implements ClientModInitializer {
                                     .executes(ctx -> {
                                         String id = com.mojang.brigadier.arguments.StringArgumentType.getString(ctx, "id");
                                         MinecraftClient.getInstance().execute(() -> {
-                                            com.mrtrazan.minecraft.codexassistant.ai.ActionPermissionManager.acceptAction(id);
+                                            com.mrtrazan.minecraft.pvphelper.ai.ActionPermissionManager.acceptAction(id);
                                         });
                                         return 1;
                                     })
@@ -148,7 +148,7 @@ public class CodexAssistantClient implements ClientModInitializer {
                                     .executes(ctx -> {
                                         String id = com.mojang.brigadier.arguments.StringArgumentType.getString(ctx, "id");
                                         MinecraftClient.getInstance().execute(() -> {
-                                            com.mrtrazan.minecraft.codexassistant.ai.ActionPermissionManager.declineAction(id);
+                                            com.mrtrazan.minecraft.pvphelper.ai.ActionPermissionManager.declineAction(id);
                                         });
                                         return 1;
                                     })
@@ -165,18 +165,18 @@ public class CodexAssistantClient implements ClientModInitializer {
                                     if (mc.player == null) return;
 
                                     // Spawn the bot
-                                    com.mrtrazan.minecraft.codexassistant.ai.CopperBotManager.spawnBot(mc);
+                                    com.mrtrazan.minecraft.pvphelper.ai.CopperBotManager.spawnBot(mc);
 
                                     // Test API keys and show status
-                                    com.mrtrazan.minecraft.codexassistant.config.ModConfig cfg =
-                                        com.mrtrazan.minecraft.codexassistant.config.ModConfig.getInstance();
+                                    com.mrtrazan.minecraft.pvphelper.config.ModConfig cfg =
+                                        com.mrtrazan.minecraft.pvphelper.config.ModConfig.getInstance();
 
                                     boolean hasOpenAI = cfg.openAiApiKey != null && !cfg.openAiApiKey.isBlank();
                                     boolean hasGemini = cfg.geminiApiKey != null && !cfg.geminiApiKey.isBlank();
 
                                     mc.player.sendMessage(
                                         net.minecraft.text.Text.literal(
-                                            "§e[Codex AI] API Status:\n"
+                                            "§e[PvP AI] API Status:\n"
                                             + "§7  OpenAI key: " + (hasOpenAI ? "§aConfigured" : "§cMissing") + "\n"
                                             + "§7  Gemini key: " + (hasGemini ? "§aConfigured" : "§cMissing") + "\n"
                                             + "§7  Gemini URL: §f" + (cfg.geminiApiUrl != null && !cfg.geminiApiUrl.isBlank() ? cfg.geminiApiUrl : "(default)") + "\n"
@@ -185,7 +185,7 @@ public class CodexAssistantClient implements ClientModInitializer {
 
                                     // Fire quick API ping tests in background
                                     if (hasOpenAI) {
-                                        com.mrtrazan.minecraft.codexassistant.ai.OpenAIClient.testApiKey(
+                                        com.mrtrazan.minecraft.pvphelper.ai.OpenAIClient.testApiKey(
                                             cfg.openAiApiKey, cfg.openAiApiUrl, false
                                         ).thenAccept(ok -> mc.execute(() ->
                                             mc.player.sendMessage(
@@ -193,7 +193,7 @@ public class CodexAssistantClient implements ClientModInitializer {
                                         ));
                                     }
                                     if (hasGemini) {
-                                        com.mrtrazan.minecraft.codexassistant.ai.OpenAIClient.testApiKey(
+                                        com.mrtrazan.minecraft.pvphelper.ai.OpenAIClient.testApiKey(
                                             cfg.geminiApiKey, cfg.geminiApiUrl, true
                                         ).thenAccept(ok -> mc.execute(() ->
                                             mc.player.sendMessage(
@@ -212,14 +212,14 @@ public class CodexAssistantClient implements ClientModInitializer {
                                 MinecraftClient.getInstance().execute(() -> {
                                     MinecraftClient mc = MinecraftClient.getInstance();
                                     if (mc.player == null) return;
-                                    com.mrtrazan.minecraft.codexassistant.ai.CopperBotManager.spawnBot(mc);
-                                    com.mrtrazan.minecraft.codexassistant.config.ModConfig cfg =
-                                        com.mrtrazan.minecraft.codexassistant.config.ModConfig.getInstance();
+                                    com.mrtrazan.minecraft.pvphelper.ai.CopperBotManager.spawnBot(mc);
+                                    com.mrtrazan.minecraft.pvphelper.config.ModConfig cfg =
+                                        com.mrtrazan.minecraft.pvphelper.config.ModConfig.getInstance();
                                     boolean hasOpenAI = cfg.openAiApiKey != null && !cfg.openAiApiKey.isBlank();
                                     boolean hasGemini = cfg.geminiApiKey != null && !cfg.geminiApiKey.isBlank();
                                     mc.player.sendMessage(
                                         net.minecraft.text.Text.literal(
-                                            "§e[Codex AI] Bot spawned! API:\n"
+                                            "§e[PvP AI] Bot spawned! API:\n"
                                             + "§7  OpenAI: " + (hasOpenAI ? "§aConfigured" : "§cMissing") + "\n"
                                             + "§7  Gemini: " + (hasGemini ? "§aConfigured" : "§cMissing")
                                         ), false);
@@ -233,7 +233,7 @@ public class CodexAssistantClient implements ClientModInitializer {
                         net.fabricmc.fabric.api.client.command.v2.ClientCommandManager.literal("removeAI")
                             .executes(ctx -> {
                                 MinecraftClient.getInstance().execute(() -> {
-                                    com.mrtrazan.minecraft.codexassistant.ai.CopperBotManager.removeBot(
+                                    com.mrtrazan.minecraft.pvphelper.ai.CopperBotManager.removeBot(
                                         MinecraftClient.getInstance());
                                 });
                                 return 1;
@@ -250,20 +250,20 @@ public class CodexAssistantClient implements ClientModInitializer {
         // Keybinding open chat (fallback to old input check if keybinding unavailable)
         try {
             if (openChatKey != null && openChatKey.wasPressed()) {
-                client.execute(() -> client.setScreen(new com.mrtrazan.minecraft.codexassistant.chat.ChatScreen()));
+                client.execute(() -> client.setScreen(new com.mrtrazan.minecraft.pvphelper.chat.ChatScreen()));
             }
             // Panic key handling
             if (panicKey != null && panicKey.wasPressed()) {
                 client.execute(() -> {
                     ModConfig.getInstance().aiDisabled = !ModConfig.getInstance().aiDisabled;
                     ModConfig.save();
-                    System.out.println("[Codex Assistant] AI disabled: " + ModConfig.getInstance().aiDisabled);
+                    System.out.println("[PvP Helper] AI disabled: " + ModConfig.getInstance().aiDisabled);
                 });
             } else {
                 var window = client.getWindow();
                 boolean j = net.minecraft.client.util.InputUtil.isKeyPressed(window, org.lwjgl.glfw.GLFW.GLFW_KEY_J);
                 if (j && !lastJPressed) {
-                    client.execute(() -> client.setScreen(new com.mrtrazan.minecraft.codexassistant.chat.ChatScreen()));
+                    client.execute(() -> client.setScreen(new com.mrtrazan.minecraft.pvphelper.chat.ChatScreen()));
                 }
                 lastJPressed = j;
             }

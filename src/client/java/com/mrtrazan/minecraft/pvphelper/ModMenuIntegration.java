@@ -1,4 +1,4 @@
-package com.mrtrazan.minecraft.codexassistant;
+package com.mrtrazan.minecraft.pvphelper;
 
 import com.terraformersmc.modmenu.api.ConfigScreenFactory;
 import com.terraformersmc.modmenu.api.ModMenuApi;

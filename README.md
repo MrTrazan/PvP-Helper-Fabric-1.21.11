@@ -1,16 +1,12 @@
-# PvP Assistant / Codex Assistant
+# PvP Assistant
 
-A Minecraft Fabric 1.21.11 client mod that adds an in-game assistant bar with AI-powered PvP and inventory/block assistance.
+A PvP Helper For Rookies and Players Who Dosent Know to PvP Good or u suck at pvp . (:
 
 ## Features
 
-- Press `J` or run `/cai` to open the assistant bar.
-- Chat with the assistant using `/cai ask <message>`.
-- Request local context with `/cai ask status` or `/cai ask look`.
-- Trigger client actions from chat with commands like `attack`, `use`, `place`, `break`, `break 40`, and `stop`.
-- Supports OpenAI-backed replies when the API key is configured in ModMenu.
-- Optionally set a custom OpenAI endpoint in ModMenu.
-- Local command handling still works without an OpenAI key, with fallback PvP and inventory behavior.
+- Never Alerts Anti-Cheat Like Vulcan , TotemGaurd , GrimAC , Watchdog
+- Can Spawn a Copper Golem With Its mind Of its own ( In SinglePLayer World Only)
+- OpenAI for Inv Management and Google Gimini for the PvP / Block Placement End
 
 ## Installation
 

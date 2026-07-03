@@ -3,22 +3,22 @@
   "id": "pvp_helper",
   "version": "${version}",
   "name": "PvP Assistant",
-  "description": "AI-powered PvP assistant for Fabric 1.21.1",
-  "license": "ARR",
+  "description": "A PvP Helper For Rookies and Players Who Dosent Know to PvP Good or u suck at pvp . (: ",
+  "license": "MIT",
   "authors": [
     "MrTrazan"
   ],
   "environment": "*",
-  "accessWidener": "codex_assistant.accesswidener",
+  "accessWidener": "pvp_helper.accesswidener",
   "entrypoints": {
     "main": [
-      "com.mrtrazan.minecraft.codexassistant.CodexAssistant"
+      "com.mrtrazan.minecraft.pvphelper.PvPHelper"
     ],
     "client": [
-      "com.mrtrazan.minecraft.codexassistant.CodexAssistantClient"
+      "com.mrtrazan.minecraft.pvphelper.PvPHelperClient"
     ],
     "modmenu": [
-      "com.mrtrazan.minecraft.codexassistant.ModMenuProvider"
+      "com.mrtrazan.minecraft.pvphelper.ModMenuProvider"
     ]
   },
   "depends": {

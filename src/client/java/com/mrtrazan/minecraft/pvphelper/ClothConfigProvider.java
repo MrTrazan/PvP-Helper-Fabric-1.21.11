@@ -1,4 +1,4 @@
-package com.mrtrazan.minecraft.codexassistant;
+package com.mrtrazan.minecraft.pvphelper;
 
 import me.shedaniel.clothconfig2.api.ConfigBuilder;
 import me.shedaniel.clothconfig2.api.ConfigEntryBuilder;
@@ -7,7 +7,7 @@ import net.minecraft.text.Text;
 
 public class ClothConfigProvider {
     public static Screen createScreen(Screen parent) {
-        ConfigBuilder builder = ConfigBuilder.create().setParentScreen(parent).setTitle(Text.of("Codex Assistant"));
+        ConfigBuilder builder = ConfigBuilder.create().setParentScreen(parent).setTitle(Text.of("PvP Helper"));
         ConfigEntryBuilder entryBuilder = builder.entryBuilder();
 
         // Basic example entries; real entries are added elsewhere (ModConfig persistence).

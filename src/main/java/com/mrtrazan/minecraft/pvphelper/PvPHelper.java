@@ -1,11 +1,11 @@
-package com.mrtrazan.minecraft.codexassistant;
+package com.mrtrazan.minecraft.pvphelper;
 
 import net.fabricmc.api.ModInitializer;
 
-public class CodexAssistant implements ModInitializer {
+public class PvPHelper implements ModInitializer {
 
-    public static final String MOD_ID = "codex_assistant";
-    public static final String MOD_NAME = "Codex Assistant";
+    public static final String MOD_ID = "pvp_helper";
+    public static final String MOD_NAME = "PvP Helper";
 
     @Override
     public void onInitialize() {

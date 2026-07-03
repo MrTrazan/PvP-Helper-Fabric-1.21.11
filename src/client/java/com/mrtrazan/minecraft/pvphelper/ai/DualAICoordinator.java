@@ -1,4 +1,4 @@
-package com.mrtrazan.minecraft.codexassistant.ai;
+package com.mrtrazan.minecraft.pvphelper.ai;
 
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.player.PlayerEntity;
@@ -49,7 +49,7 @@ public class DualAICoordinator {
 
     public static void tick(MinecraftClient client) {
         if (client.player == null || client.world == null) return;
-        if (com.mrtrazan.minecraft.codexassistant.config.ModConfig.getInstance().aiDisabled) {
+        if (com.mrtrazan.minecraft.pvphelper.config.ModConfig.getInstance().aiDisabled) {
             if (wasAiMoving) {
                 client.options.leftKey.setPressed(false);
                 client.options.rightKey.setPressed(false);

@@ -1,4 +1,4 @@
-package com.mrtrazan.minecraft.codexassistant.ai;
+package com.mrtrazan.minecraft.pvphelper.ai;
 
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.player.PlayerEntity;

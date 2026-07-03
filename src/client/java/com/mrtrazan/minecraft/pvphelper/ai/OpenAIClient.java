@@ -1,4 +1,4 @@
-package com.mrtrazan.minecraft.codexassistant.ai;
+package com.mrtrazan.minecraft.pvphelper.ai;
 
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -11,7 +11,7 @@ import java.util.concurrent.CompletableFuture;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import com.mrtrazan.minecraft.codexassistant.config.ModConfig;
+import com.mrtrazan.minecraft.pvphelper.config.ModConfig;
 
 public class OpenAIClient {
 
@@ -104,8 +104,8 @@ public class OpenAIClient {
                     int status = response.statusCode();
                     String body = response.body();
                     if (status != 200) {
-                        System.err.println("[CodexAssistant] API error HTTP " + status + " from " + apiUrl);
-                        System.err.println("[CodexAssistant] Response body: " + body);
+                        System.err.println("[PvPHelper] API error HTTP " + status + " from " + apiUrl);
+                        System.err.println("[PvPHelper] Response body: " + body);
                     }
                     return body;
                 })
@@ -118,8 +118,8 @@ public class OpenAIClient {
                                 int status = retryResp.statusCode();
                                 String body = retryResp.body();
                                 if (status != 200) {
-                                    System.err.println("[CodexAssistant] Retry API error HTTP " + status + " from " + apiUrl);
-                                    System.err.println("[CodexAssistant] Retry response body: " + body);
+                                    System.err.println("[PvPHelper] Retry API error HTTP " + status + " from " + apiUrl);
+                                    System.err.println("[PvPHelper] Retry response body: " + body);
                                 }
                                 return body;
                             })
@@ -128,7 +128,7 @@ public class OpenAIClient {
                     return CompletableFuture.completedFuture(resp);
                 })
                 .exceptionally(ex -> {
-                    System.err.println("[CodexAssistant] Network exception calling " + apiUrl + ": " + ex.getMessage());
+                    System.err.println("[PvPHelper] Network exception calling " + apiUrl + ": " + ex.getMessage());
                     ex.printStackTrace();
                     return null;
                 });
@@ -257,8 +257,8 @@ public class OpenAIClient {
                  (trimmed.contains("/v1beta/models") || trimmed.contains("/v1/models")));
 
             if (isOldGeminiNativeUrl) {
-                System.err.println("[CodexAssistant] Detected old Gemini native API URL: " + trimmed);
-                System.err.println("[CodexAssistant] Auto-correcting to OpenAI-compatible endpoint.");
+                System.err.println("[PvPHelper] Detected old Gemini native API URL: " + trimmed);
+                System.err.println("[PvPHelper] Auto-correcting to OpenAI-compatible endpoint.");
                 return DEFAULT_GEMINI_URL;
             }
 
@@ -330,7 +330,7 @@ public class OpenAIClient {
 
     private static String parseResponse(String body) {
         if (body == null || body.isBlank()) {
-            System.err.println("[CodexAssistant] parseResponse: received null/empty body");
+            System.err.println("[PvPHelper] parseResponse: received null/empty body");
             return null;
         }
         try {
@@ -338,8 +338,8 @@ public class OpenAIClient {
             // This means the wrong URL was used — log it clearly
             com.google.gson.JsonElement element = com.google.gson.JsonParser.parseString(body);
             if (element.isJsonArray()) {
-                System.err.println("[CodexAssistant] parseResponse: response is a JSON array — you are hitting the OLD native Gemini API, not the OpenAI-compatible endpoint!");
-                System.err.println("[CodexAssistant] Clear the Gemini URL field in Mod Menu config and Save again.");
+                System.err.println("[PvPHelper] parseResponse: response is a JSON array — you are hitting the OLD native Gemini API, not the OpenAI-compatible endpoint!");
+                System.err.println("[PvPHelper] Clear the Gemini URL field in Mod Menu config and Save again.");
                 // Try to extract text from native Gemini format anyway
                 com.google.gson.JsonArray arr = element.getAsJsonArray();
                 if (arr.size() > 0) {
@@ -365,14 +365,14 @@ public class OpenAIClient {
 
             JsonObject json = element.getAsJsonObject();
             if (json == null) {
-                System.err.println("[CodexAssistant] parseResponse: body is not valid JSON: " + body);
+                System.err.println("[PvPHelper] parseResponse: body is not valid JSON: " + body);
                 return null;
             }
             // Check for API-level error object
             if (json.has("error")) {
                 JsonObject err = json.getAsJsonObject("error");
                 String errMsg = err.has("message") ? err.get("message").getAsString() : body;
-                System.err.println("[CodexAssistant] API returned error: " + errMsg);
+                System.err.println("[PvPHelper] API returned error: " + errMsg);
                 return null;
             }
 
@@ -394,12 +394,12 @@ public class OpenAIClient {
             }
 
             if (!json.has("choices")) {
-                System.err.println("[CodexAssistant] parseResponse: no 'choices' field. Body: " + body);
+                System.err.println("[PvPHelper] parseResponse: no 'choices' field. Body: " + body);
                 return null;
             }
             JsonArray choices = json.getAsJsonArray("choices");
             if (choices.size() == 0) {
-                System.err.println("[CodexAssistant] parseResponse: 'choices' array is empty");
+                System.err.println("[PvPHelper] parseResponse: 'choices' array is empty");
                 return null;
             }
             JsonObject firstChoice = choices.get(0).getAsJsonObject();
@@ -412,9 +412,9 @@ public class OpenAIClient {
             if (firstChoice.has("text")) {
                 return firstChoice.get("text").getAsString().trim();
             }
-            System.err.println("[CodexAssistant] parseResponse: could not extract content. Choice: " + firstChoice);
+            System.err.println("[PvPHelper] parseResponse: could not extract content. Choice: " + firstChoice);
         } catch (Exception e) {
-            System.err.println("[CodexAssistant] parseResponse exception. Body was: " + body);
+            System.err.println("[PvPHelper] parseResponse exception. Body was: " + body);
             e.printStackTrace();
         }
         return null;

@@ -1,4 +1,4 @@
-package com.mrtrazan.minecraft.codexassistant.ai;
+package com.mrtrazan.minecraft.pvphelper.ai;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -140,10 +140,10 @@ public class GeminiPvPEngine {
     public static String getPvPAction(MinecraftClient client, PlayerEntity target, String context) {
         if (client.player == null || target == null) return "NONE";
 
-        if (!com.mrtrazan.minecraft.codexassistant.config.ModConfig.getInstance().enableGemini) return "NONE";
+        if (!com.mrtrazan.minecraft.pvphelper.config.ModConfig.getInstance().enableGemini) return "NONE";
 
-        if (com.mrtrazan.minecraft.codexassistant.config.ModConfig.getInstance().geminiApiKey != null
-            && !com.mrtrazan.minecraft.codexassistant.config.ModConfig.getInstance().geminiApiKey.isBlank()) {
+        if (com.mrtrazan.minecraft.pvphelper.config.ModConfig.getInstance().geminiApiKey != null
+            && !com.mrtrazan.minecraft.pvphelper.config.ModConfig.getInstance().geminiApiKey.isBlank()) {
             scheduleApiDecision(client, target, context);
             return null; // async; result handled in callback
         }
@@ -198,8 +198,8 @@ public class GeminiPvPEngine {
             moshpitContext
         );
 
-        com.mrtrazan.minecraft.codexassistant.config.ModConfig cfg =
-            com.mrtrazan.minecraft.codexassistant.config.ModConfig.getInstance();
+        com.mrtrazan.minecraft.pvphelper.config.ModConfig cfg =
+            com.mrtrazan.minecraft.pvphelper.config.ModConfig.getInstance();
 
         OpenAIClient.requestChatCompletionWithHistory(
                 "gemini-2.0-flash",
@@ -218,7 +218,7 @@ public class GeminiPvPEngine {
                 final String decision = rawDecision.split("[^A-Z_]")[0].trim();
                 ConversationManager.addAssistantMessage(decision);
                 client.execute(() -> {
-                    com.mrtrazan.minecraft.codexassistant.ai.DualAICoordinator.nextPlannedAction = decision;
+                    com.mrtrazan.minecraft.pvphelper.ai.DualAICoordinator.nextPlannedAction = decision;
                     executeGeminiDecision(client, target, decision);
                 });
             })
