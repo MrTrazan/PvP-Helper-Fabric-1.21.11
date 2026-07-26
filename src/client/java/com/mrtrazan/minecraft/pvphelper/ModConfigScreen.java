@@ -33,7 +33,6 @@ public class ModConfigScreen extends Screen {
         int mid = this.width / 2;
         int y = 50;
 
-        // OpenAI API Key
         apiKeyField = new TextFieldWidget(this.textRenderer, mid - 150, y, 300, 20, Text.literal("API Key"));
         apiKeyField.setMaxLength(512);
         apiKeyField.setText(ModConfig.getInstance().openAiApiKey != null ? ModConfig.getInstance().openAiApiKey : "");
@@ -58,32 +57,39 @@ public class ModConfigScreen extends Screen {
         addDrawableChild(geminiUrlField);
         addSelectableChild(geminiUrlField);
 
-        // Enable toggles - positioned below text fields
+        ButtonWidget masterAiToggle = ButtonWidget.builder(
+            Text.literal("Master AI System: " + (ModConfig.getInstance().aiDisabled ? "§c§lOFF" : "§a§lON")),
+            btn -> {
+                boolean disabled = ModConfig.getInstance().toggleAiDisabled();
+                btn.setMessage(Text.literal("Master AI System: " + (disabled ? "§c§lOFF" : "§a§lON")));
+            }
+        ).dimensions(mid - 150, y + 110, 300, 20).build();
+        addDrawableChild(masterAiToggle);
+
         geminiToggle = ButtonWidget.builder(Text.literal("Enable Gemini: " + (ModConfig.getInstance().enableGemini ? "ON" : "OFF")), btn -> {
             ModConfig.getInstance().enableGemini = !ModConfig.getInstance().enableGemini;
             btn.setMessage(Text.literal("Enable Gemini: " + (ModConfig.getInstance().enableGemini ? "ON" : "OFF")));
-        }).dimensions(mid - 150, y + 115, 140, 20).build();
+        }).dimensions(mid - 150, y + 135, 140, 20).build();
         addDrawableChild(geminiToggle);
         
         chatgptToggle = ButtonWidget.builder(Text.literal("Enable ChatGPT: " + (ModConfig.getInstance().enableChatGPT ? "ON" : "OFF")), btn -> {
             ModConfig.getInstance().enableChatGPT = !ModConfig.getInstance().enableChatGPT;
             btn.setMessage(Text.literal("Enable ChatGPT: " + (ModConfig.getInstance().enableChatGPT ? "ON" : "OFF")));
-        }).dimensions(mid + 10, y + 115, 140, 20).build();
+        }).dimensions(mid + 10, y + 135, 140, 20).build();
         addDrawableChild(chatgptToggle);
 
         debugToggle = ButtonWidget.builder(Text.literal("Debug Overlay: " + (ModConfig.getInstance().enableDebugOverlay ? "ON" : "OFF")), btn -> {
             ModConfig.getInstance().enableDebugOverlay = !ModConfig.getInstance().enableDebugOverlay;
             btn.setMessage(Text.literal("Debug Overlay: " + (ModConfig.getInstance().enableDebugOverlay ? "ON" : "OFF")));
-        }).dimensions(mid - 150, y + 140, 140, 20).build();
+        }).dimensions(mid - 150, y + 160, 140, 20).build();
         addDrawableChild(debugToggle);
 
         autoAcceptToggle = ButtonWidget.builder(Text.literal("Auto Accept: " + (ModConfig.getInstance().autoAcceptActions ? "ON" : "OFF")), btn -> {
             ModConfig.getInstance().autoAcceptActions = !ModConfig.getInstance().autoAcceptActions;
             btn.setMessage(Text.literal("Auto Accept: " + (ModConfig.getInstance().autoAcceptActions ? "ON" : "OFF")));
-        }).dimensions(mid + 10, y + 140, 140, 20).build();
+        }).dimensions(mid + 10, y + 160, 140, 20).build();
         addDrawableChild(autoAcceptToggle);
 
-        // Save and Cancel buttons
         addDrawableChild(ButtonWidget.builder(Text.literal("Test API Keys"), button -> {
             String openAiKey = apiKeyField.getText();
             String openAiUrl = apiUrlField.getText();
@@ -109,21 +115,20 @@ public class ModConfigScreen extends Screen {
                     System.out.println("[PvP Helper] " + message);
                 });
             });
-        }).dimensions(mid - 150, y + 170, 140, 20).build());
+        }).dimensions(mid - 150, y + 188, 140, 20).build());
 
         addDrawableChild(ButtonWidget.builder(Text.literal("Save"), button -> {
             ModConfig.getInstance().openAiApiKey = apiKeyField.getText();
             ModConfig.getInstance().openAiApiUrl = apiUrlField.getText();
             ModConfig.getInstance().geminiApiKey = geminiKeyField.getText();
             ModConfig.getInstance().geminiApiUrl = geminiUrlField.getText();
-            // toggles already updated by their buttons; just persist
             ModConfig.save();
             this.client.setScreen(parent);
-        }).dimensions(mid - 72, y + 200, 70, 20).build());
+        }).dimensions(mid - 72, y + 215, 70, 20).build());
 
         addDrawableChild(ButtonWidget.builder(Text.literal("Cancel"), button -> {
             this.client.setScreen(parent);
-        }).dimensions(mid + 2, y + 200, 98, 20).build());
+        }).dimensions(mid + 2, y + 215, 98, 20).build());
     }
 
     @Override

@@ -14,7 +14,6 @@ public final class VersionCompat {
 
     private VersionCompat() {}
 
-    // ── Math helpers ──────────────────────────────────────────────────────────
 
     /**
      * Equivalent to {@code Math.clamp(value, min, max)} (Java 21+).
@@ -32,7 +31,6 @@ public final class VersionCompat {
         return Math.max(min, Math.min(max, value));
     }
 
-    // ── Player helpers ────────────────────────────────────────────────────────
 
     /**
      * Returns the player's current XP level safely across MC versions.
@@ -46,7 +44,6 @@ public final class VersionCompat {
         }
     }
 
-    // ── Item helpers ──────────────────────────────────────────────────────────
 
     /**
      * Returns the display name of an ItemStack, falling back gracefully.

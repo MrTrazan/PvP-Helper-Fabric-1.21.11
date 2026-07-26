@@ -30,7 +30,6 @@ public class DualAICoordinator {
     public static PlayerEntity activeTarget = null;
     private static boolean wasAiMoving = false;
 
-    // ── Moshpit round-robin ───────────────────────────────────────────────────
 
     /** How many ticks between target rotations in moshpit mode. */
     private static final int MOSHPIT_ROTATE_TICKS = 8;
@@ -40,12 +39,10 @@ public class DualAICoordinator {
     /** Live list of nearby enemy players used for round-robin. */
     private static final List<PlayerEntity> moshpitTargets = new ArrayList<>();
 
-    // ── Hit tracking via hurtTime ─────────────────────────────────────────────
 
     private static int  lastHurtTime = 0;
     private static float lastHealth  = -1f;
 
-    // ── Public entry point ────────────────────────────────────────────────────
 
     public static void tick(MinecraftClient client) {
         if (client.player == null || client.world == null) return;
@@ -61,15 +58,12 @@ public class DualAICoordinator {
             return;
         }
 
-        // Tick client-side Copper Golem bot
         CopperBotManager.tick(client);
 
         detectAndRecordHit(client);
 
-        // Update moshpit snapshot every tick (cheap — just counts enemies)
         MoshpitCache.trySnapshot(client);
 
-        // Tick PvP and combat controls on every single tick
         managePvP(client);
         handleCombatMovementAndAim(client);
 
@@ -80,7 +74,6 @@ public class DualAICoordinator {
         }
     }
 
-    // ── Hit detection ─────────────────────────────────────────────────────────
 
     /**
      * Uses {@code hurtTime} to detect when the player is hit.
@@ -125,12 +118,10 @@ public class DualAICoordinator {
         lastHealth   = health;
     }
 
-    // ── PvP management (Gemini) ───────────────────────────────────────────────
 
     private static void managePvP(MinecraftClient client) {
         if (client.player == null || client.world == null) return;
 
-        // Gather all nearby enemies
         moshpitTargets.clear();
         StringBuilder allEnemies  = new StringBuilder();
         double        closestDist = 12.0;
@@ -151,11 +142,8 @@ public class DualAICoordinator {
             }
         }
 
-        // ── MOSHPIT MODE ──────────────────────────────────────────────────────
         if (MoshpitCache.isMoshpit() && moshpitTargets.size() >= MoshpitCache.MOSHPIT_THRESHOLD) {
-            // Sort: highest-threat enemies first (matching MoshpitCache order)
             moshpitTargets.sort((a, b) -> {
-                // Use simple threat heuristic: lower health + more armor + closer = higher threat
                 double scoreA = a.getHealth() * 0.4 + a.getArmor() * 0.3
                     + Math.max(0, MoshpitCache.MOSHPIT_RADIUS - client.player.distanceTo(a)) * 0.3;
                 double scoreB = b.getHealth() * 0.4 + b.getArmor() * 0.3
@@ -163,18 +151,15 @@ public class DualAICoordinator {
                 return Double.compare(scoreB, scoreA);
             });
 
-            // Rotate target every MOSHPIT_ROTATE_TICKS ticks
             moshpitRotateTick++;
             if (moshpitRotateTick >= MOSHPIT_ROTATE_TICKS) {
                 moshpitRotateTick = 0;
                 moshpitTargetIndex = (moshpitTargetIndex + 1) % moshpitTargets.size();
             }
 
-            // Guard: clamp index
             if (moshpitTargetIndex >= moshpitTargets.size()) moshpitTargetIndex = 0;
 
             PlayerEntity moshTarget = moshpitTargets.get(moshpitTargetIndex);
-            // Skip dead / removed targets
             if (moshTarget.isRemoved() || !moshTarget.isAlive()) {
                 moshpitTargetIndex = 0;
                 moshTarget = moshpitTargets.get(0);
@@ -193,7 +178,6 @@ public class DualAICoordinator {
             nextPlannedReason = "MOSHPIT: targeting " + moshTarget.getName().getString()
                 + " (" + moshpitTargetIndex + 1 + "/" + moshpitTargets.size() + ")";
 
-            // Attack target under crosshair if it is one of the moshpit targets
             if (client.targetedEntity instanceof PlayerEntity enemy && moshpitTargets.contains(enemy)) {
                 if (client.player.distanceTo(enemy) < 2.9
                         && client.player.getAttackCooldownProgress(0.5F) >= 1.0F) {
@@ -201,7 +185,6 @@ public class DualAICoordinator {
                 }
             }
         } else {
-            // ── NORMAL 1v1 MODE ───────────────────────────────────────────────
             moshpitRotateTick  = 0;
             moshpitTargetIndex = 0;
             activeTarget = nearestEnemy;
@@ -235,7 +218,6 @@ public class DualAICoordinator {
             return;
         }
 
-        // 1. Smooth look rotation (interpolated)
         net.minecraft.util.math.Vec3d targetEyePos = activeTarget.getEyePos();
         net.minecraft.util.math.Vec3d playerEyePos = client.player.getEyePos();
         double dx   = targetEyePos.x - playerEyePos.x;
@@ -255,8 +237,6 @@ public class DualAICoordinator {
 
         float pitchDiff = targetPitch - currentPitch;
 
-        // Anti-cheat safety: make the aiming speed non-linear (slow down as we align)
-        // and add a small random drift/noise to mimic natural human movement.
         float speedFactor = 0.25F;
         float minSpeed = 0.2F;
         
@@ -270,14 +250,12 @@ public class DualAICoordinator {
         
         float noise = (client.world.getRandom().nextFloat() - 0.5F) * 0.3F;
 
-        // Use VersionCompat.clamp instead of Java-21-only Math.clamp
         float deltaYaw   = VersionCompat.clamp(yawDiff + noise,   -maxYawSpeed,   maxYawSpeed);
         float deltaPitch = VersionCompat.clamp(pitchDiff + noise, -maxPitchSpeed, maxPitchSpeed);
 
         client.player.setYaw(currentYaw + deltaYaw);
         client.player.setPitch(currentPitch + deltaPitch);
 
-        // 2. Keyboard simulation
         boolean strafeLeft  = "STRAFE_LEFT".equals(nextPlannedAction);
         boolean strafeRight = "STRAFE_RIGHT".equals(nextPlannedAction);
         boolean moveForward = "ATTACK".equals(nextPlannedAction)
@@ -293,7 +271,6 @@ public class DualAICoordinator {
         client.options.rightKey.setPressed(strafeRight);
         client.options.forwardKey.setPressed(moveForward);
 
-        // Jump logic: mace slam needs a jump; otherwise random small hops for unpredictability
         if ("MACE_SLAM".equals(nextPlannedAction) && client.player.isOnGround()) {
             client.options.jumpKey.setPressed(true);
         } else if (moveForward && client.player.isOnGround() && client.world.getRandom().nextFloat() < 0.15f) {
@@ -304,7 +281,6 @@ public class DualAICoordinator {
 
         wasAiMoving = true;
 
-        // 3. Attack / Combat action execution
         if (nextPlannedAction != null) {
             executeGeminiDecision(client, activeTarget, nextPlannedAction);
         }
@@ -324,7 +300,6 @@ public class DualAICoordinator {
         ctx.append(String.format("Target Health  : %.1f/20\n",  target.getHealth()));
         ctx.append(String.format("Target Armor   : %d\n",       target.getArmor()));
 
-        // Extended weapon/item scan
         boolean hasTotem = false, hasRod = false, hasSword = false;
         boolean hasMace = false, hasAxe = false, hasBow = false;
         boolean hasCrossbow = false, hasEndCrystal = false, hasElytra = false;
@@ -347,7 +322,6 @@ public class DualAICoordinator {
             if (name.contains("elytra"))                         { hasElytra = true; }
         }
 
-        // Check off-hand elytra
         if (VersionCompat.getItemName(client.player.getEquippedStack(net.minecraft.entity.EquipmentSlot.CHEST)).toLowerCase().contains("elytra")) {
             hasElytra = true;
         }
@@ -381,19 +355,16 @@ public class DualAICoordinator {
         }
     }
 
-    // ── Inventory & block management (ChatGPT / OpenAI) ─────────────────────
 
     private static void manageInventoryAndBlocks(MinecraftClient client) {
         if (client.player == null) return;
 
         String fullInventoryContext = buildFullInventoryContext(client);
 
-        // === ChatGPT role: inventory cleaning, resource planning ===
         ChatGPTInventoryEngine.optimizeInventory(client, fullInventoryContext);
         ChatGPTInventoryEngine.manageInventory(client);
         ChatGPTInventoryEngine.requestResourceAnalysis(client, fullInventoryContext);
 
-        // === Gemini role: block actions (mining/building) ===
         if (shouldGatherResources(client)) {
             gatherResources(client);
         }
@@ -441,7 +412,6 @@ public class DualAICoordinator {
         return ctx.toString();
     }
 
-    // ── Gemini block-action helpers ───────────────────────────────────────────
 
     private static boolean shouldGatherResources(MinecraftClient client) {
         if (client.player == null) return false;
@@ -475,7 +445,6 @@ public class DualAICoordinator {
         return false;
     }
 
-    // ── ChatGPT AI response scan ──────────────────────────────────────────────
 
     public static void handleChatGPTResponse(MinecraftClient client, String response) {
         if (response == null || response.isBlank()) return;
@@ -487,7 +456,6 @@ public class DualAICoordinator {
         ActionPermissionManager.scanAndProposeActions(client, response);
     }
 
-    // ── Status ────────────────────────────────────────────────────────────────
 
     public static String getStatus() {
         String moshpitStatus = MoshpitCache.isMoshpit()

@@ -35,7 +35,6 @@ public class CopperBotManager {
     public static synchronized void spawnBot(MinecraftClient client) {
         if (client.world == null || client.player == null) return;
 
-        // Remove existing bot if present
         if (botInstance != null) {
             try {
                 client.world.removeEntity(botInstance.getId(), net.minecraft.entity.Entity.RemovalReason.DISCARDED);
@@ -51,7 +50,6 @@ public class CopperBotManager {
             client.player.getZ() + 2
         );
 
-        // Defer the addEntity call to avoid world-loading race conditions
         client.execute(() -> {
             if (botInstance != null && client.world != null) {
                 try {
@@ -119,26 +117,22 @@ public class CopperBotManager {
     public static synchronized void tick(MinecraftClient client) {
         if (botInstance == null || client.world == null || client.player == null) return;
 
-        // Handle deferred re-add (flag-based, not tight-loop)
         if (botNeedsReAdd) {
             botNeedsReAdd = false;
             try {
                 client.world.addEntity(botInstance);
             } catch (Exception ignored) {}
-            return; // skip rest of tick so entity is settled
+            return;
         }
 
-        // If entity fell out of the world tracker, schedule a single re-add
         if (client.world.getEntityById(botInstance.getId()) == null) {
             botNeedsReAdd = true;
             return;
         }
 
-        // --- FOLLOWING LIKE A DOG BEHAVIOR ---
         if (ticksRemainingForAction <= 0) {
             double distToPlayer = botInstance.distanceTo(client.player);
             if (distToPlayer > 16.0) {
-                // Teleport to player with a small offset
                 double angle = client.world.getRandom().nextDouble() * Math.PI * 2;
                 botInstance.setPosition(
                     client.player.getX() + Math.cos(angle) * 1.5,
@@ -153,7 +147,6 @@ public class CopperBotManager {
             }
         }
 
-        // Interpolate movement toward target position
         if (targetPos != null) {
             Vec3d botPos = new Vec3d(botInstance.getX(), botInstance.getY(), botInstance.getZ());
             Vec3d dir    = targetPos.subtract(botPos);
@@ -171,7 +164,6 @@ public class CopperBotManager {
             }
         }
 
-        // Swing arm only on even ticks during action (not every tick — prevents spam)
         if (ticksRemainingForAction > 0) {
             ticksRemainingForAction--;
             if (ticksRemainingForAction % 2 == 0) {

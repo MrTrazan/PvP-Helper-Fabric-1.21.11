@@ -57,14 +57,14 @@ public class ActionPermissionManager {
             MutableText acceptText = Text.literal(" [ACCEPT] ").setStyle(Style.EMPTY
                 .withColor(Formatting.GREEN)
                 .withBold(true)
-                .withClickEvent(new ClickEvent.RunCommand("/cai accept " + id))
-                .withHoverEvent(new HoverEvent.ShowText(Text.literal("Click to approve this action"))));
+                .withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/cai accept " + id))
+                .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Text.literal("Click to approve this action"))));
 
             MutableText declineText = Text.literal(" [DECLINE] ").setStyle(Style.EMPTY
                 .withColor(Formatting.RED)
                 .withBold(true)
-                .withClickEvent(new ClickEvent.RunCommand("/cai decline " + id))
-                .withHoverEvent(new HoverEvent.ShowText(Text.literal("Click to reject this action"))));
+                .withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/cai decline " + id))
+                .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Text.literal("Click to reject this action"))));
 
             client.player.sendMessage(header.append(descText).append(acceptText).append(declineText), false);
         }

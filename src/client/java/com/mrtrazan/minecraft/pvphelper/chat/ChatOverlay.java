@@ -17,7 +17,6 @@ public class ChatOverlay {
             context.drawText(client.textRenderer, Text.literal(msgs.get(i)), x, y, 0xDDDDDD, false);
             y += 12;
         }
-        // small status
         context.drawText(client.textRenderer, Text.literal(ChatManager.getStatus()), 10, y + 6, 0xAAAAAA, false);
     }
 }

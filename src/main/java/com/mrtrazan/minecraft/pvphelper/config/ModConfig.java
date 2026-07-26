@@ -33,6 +33,12 @@ public class ModConfig {
         return INSTANCE;
     }
 
+    public boolean toggleAiDisabled() {
+        this.aiDisabled = !this.aiDisabled;
+        save();
+        return this.aiDisabled;
+    }
+
     public static void load() {
         try {
             Files.createDirectories(CONFIG_PATH.getParent());

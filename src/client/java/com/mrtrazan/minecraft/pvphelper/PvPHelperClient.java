@@ -15,6 +15,7 @@ public class PvPHelperClient implements ClientModInitializer {
 
     private KeyBinding openChatKey;
     private KeyBinding panicKey;
+    private KeyBinding toggleAiKey;
     private boolean commandRegistered = false;
 
     @Override
@@ -23,33 +24,38 @@ public class PvPHelperClient implements ClientModInitializer {
 
         ModConfig.load();
 
-        // Register a keybinding for opening the chat (J)
         try {
             openChatKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
                 "key.pvp_helper.open_chat",
                 InputUtil.Type.KEYSYM,
                 GLFW.GLFW_KEY_J,
-                KeyBinding.Category.MISC
+                KeyBinding.MISC_CATEGORY
             ));
         } catch (Throwable t) {
-            // KeyBinding API unavailable
         }
 
-        // Register panic key (disable all AI actions)
         try {
             panicKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
                 "key.pvp_helper.panic",
                 InputUtil.Type.KEYSYM,
                 GLFW.GLFW_KEY_P,
-                KeyBinding.Category.MISC
+                KeyBinding.MISC_CATEGORY
             ));
         } catch (Throwable t) {
-            // KeyBinding API unavailable
+        }
+
+        try {
+            toggleAiKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
+                "key.pvp_helper.toggle_ai",
+                InputUtil.Type.KEYSYM,
+                GLFW.GLFW_KEY_O,
+                KeyBinding.MISC_CATEGORY
+            ));
+        } catch (Throwable t) {
         }
 
         ClientTickEvents.END_CLIENT_TICK.register(this::onClientTick);
 
-        // Intercept player chat messages client-side
         net.fabricmc.fabric.api.client.message.v1.ClientSendMessageEvents.ALLOW_CHAT.register(message -> {
             String trimmed = message.trim();
             String lower = trimmed.toLowerCase();
@@ -57,19 +63,16 @@ public class PvPHelperClient implements ClientModInitializer {
                 MinecraftClient.getInstance().execute(() -> {
                     com.mrtrazan.minecraft.pvphelper.chat.ChatManager.sendUserMessageFromCommand(trimmed, true);
                 });
-                return false; // prevent sending to the server
+                return false;
             }
-            return true; // allow sending to the server
+            return true;
         });
 
-        // HUD overlay render
         net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback.EVENT.register((context, tickDelta) -> {
             com.mrtrazan.minecraft.pvphelper.chat.ChatOverlay.render(context);
             com.mrtrazan.minecraft.pvphelper.chat.DebugOverlay.render(context);
         });
 
-        // Try to register /cai later when the client dispatcher becomes available.
-        // We'll attempt registration in the client tick handler so it works when the dispatcher is ready.
 
         System.out.println("[PvP Helper Client] Dual AI system ready!");
         System.out.println("  - Gemini: PvP Combat Management");
@@ -84,19 +87,14 @@ public class PvPHelperClient implements ClientModInitializer {
             DualAICoordinator.tick(client);
         }
 
-        // ActionPermissionManager is event-driven (accept/decline via /cai commands).
-        // CopperBotManager is ticked inside DualAICoordinator.tick above.
 
-        // Register client command when dispatcher becomes available
         if (!commandRegistered) {
             try {
                 var dispatcher = net.fabricmc.fabric.api.client.command.v2.ClientCommandManager.getActiveDispatcher();
                 if (dispatcher != null) {
-                    // /cai — main AI command
                     dispatcher.register(
                         net.fabricmc.fabric.api.client.command.v2.ClientCommandManager.literal("cai")
                             .executes(src -> {
-                                // Print help instead of opening a GUI
                                 MinecraftClient.getInstance().execute(() -> {
                                     if (MinecraftClient.getInstance().player != null) {
                                         MinecraftClient.getInstance().player.sendMessage(
@@ -156,7 +154,6 @@ public class PvPHelperClient implements ClientModInitializer {
                             )
                     );
 
-                    // /spawnAI — spawn Copper Golem bot + test APIs
                     dispatcher.register(
                         net.fabricmc.fabric.api.client.command.v2.ClientCommandManager.literal("spawnAI")
                             .executes(ctx -> {
@@ -164,10 +161,8 @@ public class PvPHelperClient implements ClientModInitializer {
                                     MinecraftClient mc = MinecraftClient.getInstance();
                                     if (mc.player == null) return;
 
-                                    // Spawn the bot
                                     com.mrtrazan.minecraft.pvphelper.ai.CopperBotManager.spawnBot(mc);
 
-                                    // Test API keys and show status
                                     com.mrtrazan.minecraft.pvphelper.config.ModConfig cfg =
                                         com.mrtrazan.minecraft.pvphelper.config.ModConfig.getInstance();
 
@@ -183,7 +178,6 @@ public class PvPHelperClient implements ClientModInitializer {
                                             + (hasOpenAI || hasGemini ? "§aAI online!" : "§cNo API keys set — use Mod Menu to configure keys!")
                                         ), false);
 
-                                    // Fire quick API ping tests in background
                                     if (hasOpenAI) {
                                         com.mrtrazan.minecraft.pvphelper.ai.OpenAIClient.testApiKey(
                                             cfg.openAiApiKey, cfg.openAiApiUrl, false
@@ -205,7 +199,6 @@ public class PvPHelperClient implements ClientModInitializer {
                             })
                     );
 
-                    // /spawnbot — lowercase alias for /spawnAI
                     dispatcher.register(
                         net.fabricmc.fabric.api.client.command.v2.ClientCommandManager.literal("spawnbot")
                             .executes(ctx -> {
@@ -228,7 +221,6 @@ public class PvPHelperClient implements ClientModInitializer {
                             })
                     );
 
-                    // /removeAI — remove the bot
                     dispatcher.register(
                         net.fabricmc.fabric.api.client.command.v2.ClientCommandManager.literal("removeAI")
                             .executes(ctx -> {
@@ -243,32 +235,52 @@ public class PvPHelperClient implements ClientModInitializer {
                     commandRegistered = true;
                 }
             } catch (Throwable t) {
-                // ignore - will retry on subsequent ticks
             }
         }
 
-        // Keybinding open chat (fallback to old input check if keybinding unavailable)
         try {
             if (openChatKey != null && openChatKey.wasPressed()) {
                 client.execute(() -> client.setScreen(new com.mrtrazan.minecraft.pvphelper.chat.ChatScreen()));
             }
-            // Panic key handling
-            if (panicKey != null && panicKey.wasPressed()) {
+
+            boolean toggled = false;
+            if (toggleAiKey != null && toggleAiKey.wasPressed()) {
+                toggled = true;
+            } else if (panicKey != null && panicKey.wasPressed()) {
+                toggled = true;
+            }
+
+            if (toggled) {
                 client.execute(() -> {
-                    ModConfig.getInstance().aiDisabled = !ModConfig.getInstance().aiDisabled;
-                    ModConfig.save();
-                    System.out.println("[PvP Helper] AI disabled: " + ModConfig.getInstance().aiDisabled);
+                    boolean nowDisabled = ModConfig.getInstance().toggleAiDisabled();
+                    if (client.player != null) {
+                        client.player.sendMessage(
+                            net.minecraft.text.Text.literal(
+                                "§e[PvP Helper] AI System is now: " + (nowDisabled ? "§c§lOFF (Disabled)" : "§a§lON (Active)")
+                            ), false
+                        );
+                    }
+                    if (nowDisabled) {
+                        client.options.leftKey.setPressed(false);
+                        client.options.rightKey.setPressed(false);
+                        client.options.forwardKey.setPressed(false);
+                        client.options.backKey.setPressed(false);
+                        client.options.jumpKey.setPressed(false);
+                        client.options.attackKey.setPressed(false);
+                        client.options.useKey.setPressed(false);
+                        DualAICoordinator.activeTarget = null;
+                        DualAICoordinator.nextPlannedAction = "NONE";
+                    }
                 });
             } else {
                 var window = client.getWindow();
-                boolean j = net.minecraft.client.util.InputUtil.isKeyPressed(window, org.lwjgl.glfw.GLFW.GLFW_KEY_J);
+                boolean j = net.minecraft.client.util.InputUtil.isKeyPressed(window.getHandle(), org.lwjgl.glfw.GLFW.GLFW_KEY_J);
                 if (j && !lastJPressed) {
                     client.execute(() -> client.setScreen(new com.mrtrazan.minecraft.pvphelper.chat.ChatScreen()));
                 }
                 lastJPressed = j;
             }
         } catch (Throwable t) {
-            // ignore input-related issues
         }
     }
 }

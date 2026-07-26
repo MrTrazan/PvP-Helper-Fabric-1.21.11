@@ -34,7 +34,6 @@ public class ChatManager {
         + "[ACTION: RUN_COMMAND <cmd>], [ACTION: PLACE_BLOCK <x> <y> <z> <block>], "
         + "[ACTION: BREAK_BLOCK <x> <y> <z>], [ACTION: SPAWN_BOT], or [ACTION: REMOVE_BOT].";
 
-    // ── Message log ───────────────────────────────────────────────────────────
 
     public static List<String> getMessages() {
         return new ArrayList<>(messages);
@@ -50,7 +49,6 @@ public class ChatManager {
         if (messages.size() > 200) messages.remove(0);
     }
 
-    // ── Core send methods ─────────────────────────────────────────────────────
 
     /**
      * Send a user message from the in-game chat overlay (GUI mode).
@@ -80,7 +78,6 @@ public class ChatManager {
         String apiKey = isGemini ? cfg.geminiApiKey : cfg.openAiApiKey;
         String apiUrl = isGemini ? cfg.geminiApiUrl : cfg.openAiApiUrl;
 
-        // Enrich with URL content, then call API
         OpenAIClient.enrichMessageWithUrls(cleanContent).thenCompose(enriched ->
             OpenAIClient.requestChatCompletionWithHistory(
                 model, systemPrompt, ConversationManager.recent(), enriched, apiKey, apiUrl, isGemini)
@@ -88,7 +85,6 @@ public class ChatManager {
             if (response != null && !response.isBlank()) {
                 ConversationManager.addAssistantMessage(response.trim());
                 addLocalMessage("Assistant", response.trim());
-                // Scan for proposed actions
                 MinecraftClient client = MinecraftClient.getInstance();
                 ActionPermissionManager.scanAndProposeActions(client, response);
             } else {
@@ -136,7 +132,6 @@ public class ChatManager {
         String apiKey = isGemini ? cfg.geminiApiKey : cfg.openAiApiKey;
         String apiUrl = isGemini ? cfg.geminiApiUrl : cfg.openAiApiUrl;
 
-        // Enrich with URL content asynchronously, then call API
         OpenAIClient.enrichMessageWithUrls(cleanContent).thenCompose(enriched ->
             OpenAIClient.requestChatCompletionWithHistory(
                 model, systemPrompt, ConversationManager.recent(), enriched, apiKey, apiUrl, isGemini)
@@ -148,7 +143,6 @@ public class ChatManager {
                     client.player.sendMessage(
                         Text.literal("Assistant: " + response.trim()).formatted(Formatting.GREEN), false);
                 }
-                // Scan AI response for embedded [ACTION: ...] tags
                 ActionPermissionManager.scanAndProposeActions(client, response);
             } else {
                 if (client.player != null) {
@@ -166,7 +160,6 @@ public class ChatManager {
         sendUserMessageFromCommand(content, true);
     }
 
-    // ── Context-gathering commands ────────────────────────────────────────────
 
     /**
      * Gather the player's current status (health, armor, food, position, hotbar)
@@ -191,7 +184,6 @@ public class ChatManager {
                     i, s.getItem().getName().getString(), s.getCount()));
             }
         }
-        // Include PvP hit analysis summary
         ctx.append("\n").append(com.mrtrazan.minecraft.pvphelper.ai.GeminiPvPEngine.getCombatHistorySummary());
 
         sendUserMessageFromCommand(ctx.toString(), false);
@@ -234,7 +226,6 @@ public class ChatManager {
         }
     }
 
-    // ── Status string ─────────────────────────────────────────────────────────
 
     public static String getStatus() {
         var cfg = com.mrtrazan.minecraft.pvphelper.config.ModConfig.getInstance();

@@ -21,7 +21,6 @@ import java.util.List;
  */
 public class MoshpitCache {
 
-    // ── Configuration ─────────────────────────────────────────────────────────
 
     /** Minimum number of nearby enemies to trigger moshpit mode. */
     public static final int MOSHPIT_THRESHOLD = 3;
@@ -32,12 +31,10 @@ public class MoshpitCache {
     /** How long (ms) the snapshot stays valid before a re-snap is required. */
     private static final long CACHE_TTL_MS = 5_000;
 
-    // ── Singleton snapshot ────────────────────────────────────────────────────
 
     private static volatile MoshpitCache instance = null;
     private static long snapshotTime = 0;
 
-    // ── Snapshot fields ───────────────────────────────────────────────────────
 
     public final float playerHealth;
     public final float playerMaxHealth;
@@ -61,25 +58,23 @@ public class MoshpitCache {
     /** 0-100 skill rating based on damage dealt vs received from the hit-history buffer. */
     public final int skillRating;
 
-    // ── Inner record ─────────────────────────────────────────────────────────
 
     public static class EnemyInfo {
         public final String name;
         public final double distance;
         public final float  health;
         public final int    armor;
-        public final int    threatScore; // 0-100, higher = more dangerous
+        public final int    threatScore;
 
         EnemyInfo(String name, double distance, float health, int armor) {
             this.name     = name;
             this.distance = distance;
             this.health   = health;
             this.armor    = armor;
-            // Threat score: high health + heavy armor + close = danger
             int score = 0;
-            score += (int) (health / 20f * 40);  // up to 40 pts for health
-            score += (int) (armor  / 20f * 30);  // up to 30 pts for armor
-            score += (int) (Math.max(0, (MOSHPIT_RADIUS - distance) / MOSHPIT_RADIUS) * 30); // up to 30 pts for proximity
+            score += (int) (health / 20f * 40);
+            score += (int) (armor  / 20f * 30);
+            score += (int) (Math.max(0, (MOSHPIT_RADIUS - distance) / MOSHPIT_RADIUS) * 30);
             this.threatScore = Math.min(100, score);
         }
 
@@ -90,20 +85,17 @@ public class MoshpitCache {
         }
     }
 
-    // ── Constructor ───────────────────────────────────────────────────────────
 
     private MoshpitCache(MinecraftClient client, List<EnemyInfo> enemies) {
         this.enemies = enemies;
         this.enemyCount = enemies.size();
 
-        // Player stats
         playerHealth    = client.player != null ? client.player.getHealth()    : 20f;
         playerMaxHealth = client.player != null ? client.player.getMaxHealth() : 20f;
         playerArmor     = client.player != null ? client.player.getArmor()     : 0;
         playerFood      = client.player != null ? client.player.getHungerManager().getFoodLevel() : 20;
         playerLevel     = client.player != null ? VersionCompat.getPlayerLevel(client.player) : 0;
 
-        // Weapon scan
         boolean sw = false, ax = false, mc = false, bw = false, cb = false, ec = false, el = false, tot = false;
         String best = "FIST";
 
@@ -133,24 +125,19 @@ public class MoshpitCache {
         hasTotem     = tot;
         bestWeapon   = best;
 
-        // Skill rating: derive from GeminiPvPEngine history
-        // If we've been winning (avg damage received is low, hit count is low), rating goes up
         String history = GeminiPvPEngine.getCombatHistorySummary();
-        int rating = 50; // baseline
+        int rating = 50;
         if (history.contains("No hits recorded")) {
-            rating = 70; // untouched = winning
+            rating = 70;
         } else {
-            // Parse avg damage from summary
             try {
                 int idx = history.indexOf("Avg damage per hit");
                 if (idx >= 0) {
                     String sub = history.substring(idx);
                     String[] parts = sub.split("\\s+");
-                    // "Avg damage per hit  : X.X HP"
                     for (int i = 0; i < parts.length; i++) {
                         if (parts[i].equals(":") && i + 1 < parts.length) {
                             float avgDmg = Float.parseFloat(parts[i + 1]);
-                            // Low avg damage = we're tanking hits well → higher skill
                             rating = (int) Math.max(10, Math.min(90, 90 - avgDmg * 10));
                             break;
                         }
@@ -158,12 +145,10 @@ public class MoshpitCache {
                 }
             } catch (Exception ignored) {}
         }
-        // Penalise if very low health
         if (playerHealth < 6f) rating = Math.max(5, rating - 30);
         skillRating = rating;
     }
 
-    // ── Public API ────────────────────────────────────────────────────────────
 
     /**
      * Returns true if the current snapshot represents a moshpit situation.
@@ -197,14 +182,12 @@ public class MoshpitCache {
         }
 
         if (nearby.size() >= MOSHPIT_THRESHOLD) {
-            // Sort by threat score descending so the AI prioritises the most dangerous
             nearby.sort((a, b) -> b.threatScore - a.threatScore);
             instance = new MoshpitCache(client, nearby);
             snapshotTime = System.currentTimeMillis();
             return true;
         }
 
-        // If we drop below threshold, invalidate cache so normal 1v1 logic resumes
         if (instance != null && nearby.size() < MOSHPIT_THRESHOLD) {
             instance = null;
         }

@@ -46,7 +46,6 @@ public class ChatGPTInventoryEngine {
                     analysisInFlight.set(false);
                     if (response != null && !response.isBlank()) {
                         ConversationManager.addAssistantMessage(response.trim());
-                        // Scan for [ACTION: ...] tags proposed by ChatGPT
                         ActionPermissionManager.scanAndProposeActions(client, response);
                     }
                 })
@@ -81,7 +80,7 @@ public class ChatGPTInventoryEngine {
                     client.interactionManager.clickSlot(
                         client.player.currentScreenHandler.syncId,
                         slotId,
-                        1, // drop entire stack
+                        1,
                         net.minecraft.screen.slot.SlotActionType.THROW,
                         client.player
                     );
@@ -95,7 +94,6 @@ public class ChatGPTInventoryEngine {
     private static void reorganizeHotbar(MinecraftClient client) {
         if (client.player == null || client.interactionManager == null) return;
 
-        // Target mapping for hotbar slots 0 to 4
         String[] priority = {
             "Sword", "Pickaxe", "Axe", "Food", "Block"
         };
@@ -104,10 +102,9 @@ public class ChatGPTInventoryEngine {
             String keyword = priority[targetSlot];
             ItemStack currentStack = client.player.getInventory().getStack(targetSlot);
             if (!currentStack.isEmpty() && VersionCompat.getItemName(currentStack).contains(keyword)) {
-                continue; // already correct
+                continue;
             }
 
-            // Look for matching item in rest of inventory (slots and hotbar)
             int foundSlot = -1;
             for (int i = 0; i < client.player.getInventory().size(); i++) {
                 if (i == targetSlot) continue;
@@ -121,14 +118,13 @@ public class ChatGPTInventoryEngine {
                 }
             }
 
-            // Swap if found
             if (foundSlot >= 0) {
                 int screenSlot = (foundSlot < 9) ? (foundSlot + 36) : foundSlot;
                 try {
                     client.interactionManager.clickSlot(
                         client.player.currentScreenHandler.syncId,
                         screenSlot,
-                        targetSlot, // hotbar slot to swap with
+                        targetSlot,
                         net.minecraft.screen.slot.SlotActionType.SWAP,
                         client.player
                     );
@@ -173,7 +169,6 @@ public class ChatGPTInventoryEngine {
     public static void placeBlock(MinecraftClient client, BlockPos blockPos, int hotbarSlot) {
         if (client.player == null || client.interactionManager == null) return;
 
-        // Correctly hold the block in main hand by updating selectedSlot
         client.player.getInventory().selectedSlot = hotbarSlot;
 
         BlockPos adjacentPos = blockPos.up();
@@ -225,7 +220,6 @@ public class ChatGPTInventoryEngine {
                     if (response != null && !response.isBlank()) {
                         ConversationManager.addAssistantMessage(response.trim());
                         client.execute(() -> System.out.println("[ChatGPT Inventory] Resource analysis: " + response.trim()));
-                        // Scan for [ACTION: ...] tags proposed by ChatGPT
                         ActionPermissionManager.scanAndProposeActions(client, response);
                     }
                 })

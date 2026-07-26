@@ -62,7 +62,6 @@ public class OpenAIClient {
             JsonObject requestBody = new JsonObject();
             requestBody.addProperty("model", model);
 
-            // build messages: include system, history, then user
             JsonArray messages = new JsonArray();
             if (systemMessage != null && !systemMessage.isBlank()) {
                 JsonObject sys = new JsonObject();
@@ -93,12 +92,11 @@ public class OpenAIClient {
                 .uri(URI.create(apiUrl))
                 .header("Content-Type", "application/json")
                 .header("Authorization", "Bearer " + apiKey)
-                .header("x-goog-api-key", apiKey) // Native Gemini API key compatibility
+                .header("x-goog-api-key", apiKey)
                 .timeout(Duration.ofSeconds(30))
                 .POST(HttpRequest.BodyPublishers.ofString(GSON.toJson(requestBody), StandardCharsets.UTF_8))
                 .build();
 
-            // simple retry: try twice
             return HTTP_CLIENT.sendAsync(request, HttpResponse.BodyHandlers.ofString())
                 .thenApply(response -> {
                     int status = response.statusCode();
@@ -112,7 +110,6 @@ public class OpenAIClient {
                 .thenApply(OpenAIClient::parseResponse)
                 .thenCompose(resp -> {
                     if (resp == null || resp.isBlank()) {
-                        // one retry
                         return HTTP_CLIENT.sendAsync(request, HttpResponse.BodyHandlers.ofString())
                             .thenApply(retryResp -> {
                                 int status = retryResp.statusCode();
@@ -165,7 +162,7 @@ public class OpenAIClient {
             .uri(URI.create(testUrl))
             .header("Content-Type", "application/json")
             .header("Authorization", "Bearer " + apiKey)
-            .header("x-goog-api-key", apiKey) // Native Gemini API key compatibility
+            .header("x-goog-api-key", apiKey)
             .timeout(Duration.ofSeconds(30))
             .POST(HttpRequest.BodyPublishers.ofString(GSON.toJson(requestBody), StandardCharsets.UTF_8))
             .build();
@@ -245,13 +242,7 @@ public class OpenAIClient {
             return defaultUrl;
         }
 
-        // Auto-fix: if a Gemini URL is pointing at the old native API (not the OpenAI-compat endpoint),
-        // redirect it to the correct OpenAI-compatible endpoint automatically.
         if (defaultUrl.equals(DEFAULT_GEMINI_URL)) {
-            // Old patterns that mean they saved the wrong URL:
-            //   https://generativelanguage.googleapis.com/v1beta/models/...
-            //   https://generativelanguage.googleapis.com/v1/models/...
-            //   https://generativelanguage.googleapis.com/v1beta/models  (no model suffix)
             boolean isOldGeminiNativeUrl =
                 (trimmed.contains("generativelanguage.googleapis.com") &&
                  (trimmed.contains("/v1beta/models") || trimmed.contains("/v1/models")));
@@ -262,7 +253,6 @@ public class OpenAIClient {
                 return DEFAULT_GEMINI_URL;
             }
 
-            // Partial fix: if URL ends with /openai, append /chat/completions
             String noSlash = trimmed.replaceAll("/+$", "");
             if (noSlash.endsWith("/openai")) {
                 trimmed = noSlash + "/chat/completions";
@@ -286,8 +276,6 @@ public class OpenAIClient {
         boolean isGeminiSystem = systemMessage != null && systemMessage.toLowerCase().contains("gemini");
         String aiName = isGeminiSystem ? "Gemini" : "ChatGPT";
 
-        // ── Greeting check FIRST (before any PvP keyword check) ─────────────────
-        // Bug fix: previously the Gemini branch returned "NONE" for hello/hi/hey.
         if (prompt.contains("hello") || prompt.contains("hi") || prompt.contains("hey")
                 || prompt.matches(".*\\bsup\\b.*") || prompt.matches(".*\\byo\\b.*")) {
             return "Hey! I'm " + aiName + ", your Minecraft AI assistant. "
@@ -297,7 +285,6 @@ public class OpenAIClient {
                 );
         }
 
-        // ── Gemini PvP fallback (no API key) ─────────────────────────────────────
         if (isGeminiSystem) {
             if (prompt.contains("distance") || prompt.contains("enemy") || prompt.contains("attack")) {
                 return "ATTACK";
@@ -305,7 +292,6 @@ public class OpenAIClient {
             return "NONE";
         }
 
-        // ── ChatGPT / general fallback ────────────────────────────────────────────
         if (systemMessage != null && systemMessage.toLowerCase().contains("resource")) {
             if (prompt.contains("gather") || prompt.contains("resources") || prompt.contains("stone") || prompt.contains("dirt")) {
                 return "You should collect more wood and food if your supplies are low, then return to safety.";
@@ -334,13 +320,10 @@ public class OpenAIClient {
             return null;
         }
         try {
-            // Handle case where response is a JSON array (old native Gemini API format)
-            // This means the wrong URL was used — log it clearly
             com.google.gson.JsonElement element = com.google.gson.JsonParser.parseString(body);
             if (element.isJsonArray()) {
                 System.err.println("[PvPHelper] parseResponse: response is a JSON array — you are hitting the OLD native Gemini API, not the OpenAI-compatible endpoint!");
                 System.err.println("[PvPHelper] Clear the Gemini URL field in Mod Menu config and Save again.");
-                // Try to extract text from native Gemini format anyway
                 com.google.gson.JsonArray arr = element.getAsJsonArray();
                 if (arr.size() > 0) {
                     JsonObject first = arr.get(0).getAsJsonObject();
@@ -368,7 +351,6 @@ public class OpenAIClient {
                 System.err.println("[PvPHelper] parseResponse: body is not valid JSON: " + body);
                 return null;
             }
-            // Check for API-level error object
             if (json.has("error")) {
                 JsonObject err = json.getAsJsonObject("error");
                 String errMsg = err.has("message") ? err.get("message").getAsString() : body;
@@ -376,7 +358,6 @@ public class OpenAIClient {
                 return null;
             }
 
-            // Native Gemini API Format (JSON Object containing candidates)
             if (json.has("candidates")) {
                 JsonArray candidates = json.getAsJsonArray("candidates");
                 if (candidates.size() > 0) {

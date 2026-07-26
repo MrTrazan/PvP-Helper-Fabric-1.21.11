@@ -10,7 +10,6 @@ public class ClothConfigProvider {
         ConfigBuilder builder = ConfigBuilder.create().setParentScreen(parent).setTitle(Text.of("PvP Helper"));
         ConfigEntryBuilder entryBuilder = builder.entryBuilder();
 
-        // Basic example entries; real entries are added elsewhere (ModConfig persistence).
         builder.getOrCreateCategory(Text.of("General"));
 
         return builder.build();

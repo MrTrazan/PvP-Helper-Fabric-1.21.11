@@ -75,7 +75,6 @@ public class ChatScreen extends Screen {
         List<String> msgs = ChatManager.getMessages();
         int visibleLines = getVisibleLines();
         
-        // Show big warning if no API key configured
         if (!OpenAIClient.hasApiKey()) {
             context.drawText(this.textRenderer, Text.literal("*** WARNING: NO API KEY CONFIGURED ***"), left + 5, top + 18, 0xFF0000, false);
             context.drawText(this.textRenderer, Text.literal("HELLO"), left + 5, top + 32, 0xFF5555, false);
@@ -113,8 +112,7 @@ public class ChatScreen extends Screen {
     }
 
     @Override
-    public boolean keyPressed(net.minecraft.client.input.KeyInput keyInput) {
-        int keyCode = keyInput.key();
+    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
         if (keyCode == org.lwjgl.glfw.GLFW.GLFW_KEY_ENTER || keyCode == org.lwjgl.glfw.GLFW.GLFW_KEY_KP_ENTER) {
             String txt = input.getText();
             if (!txt.isBlank()) {
@@ -123,7 +121,7 @@ public class ChatScreen extends Screen {
             }
             return true;
         }
-        return super.keyPressed(keyInput);
+        return super.keyPressed(keyCode, scanCode, modifiers);
     }
 
     public void tick() {

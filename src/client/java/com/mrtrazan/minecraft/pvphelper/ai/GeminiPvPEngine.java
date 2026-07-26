@@ -31,14 +31,13 @@ public class GeminiPvPEngine {
     private static final long MIN_GUARD_MS = 100;
     private static final AtomicBoolean requestInFlight = new AtomicBoolean(false);
 
-    // ── Combat-history ring-buffer ────────────────────────────────────────────
 
     private static final int MAX_HISTORY = 10;
 
     private static final double[] hitDistances  = new double[MAX_HISTORY];
-    private static final long[]   hitIntervals  = new long[MAX_HISTORY];   // ms between consecutive hits
-    private static final float[]  hitDamages    = new float[MAX_HISTORY];  // HP lost per hit
-    private static final double[] hitAngles     = new double[MAX_HISTORY]; // relative horizontal angle (deg)
+    private static final long[]   hitIntervals  = new long[MAX_HISTORY];
+    private static final float[]  hitDamages    = new float[MAX_HISTORY];
+    private static final double[] hitAngles     = new double[MAX_HISTORY];
     private static int historyHead = 0;
     private static int historySize = 0;
     private static long lastHitTimestamp = 0;
@@ -78,7 +77,6 @@ public class GeminiPvPEngine {
         long sumInterval = 0;
         int intervalCount = 0;
 
-        // Iterate from oldest to newest
         int start = historySize < MAX_HISTORY ? 0 : historyHead;
         for (int i = 0; i < historySize; i++) {
             int idx = (start + i) % MAX_HISTORY;
@@ -101,7 +99,6 @@ public class GeminiPvPEngine {
         sb.append(String.format("Avg combo interval  : %.0f ms\n",     avgInterval));
         sb.append(String.format("Avg attack angle    : %.1f deg (0=frontal,90=flank,180=behind)\n", avgAngle));
 
-        // Classify attacker style
         String style;
         if (avgDist < 2.5) {
             style = "CLOSE-RANGE BRAWLER";
@@ -120,7 +117,6 @@ public class GeminiPvPEngine {
         }
         sb.append("Classified style    : ").append(style).append("\n");
 
-        // Last 3 hits detail
         sb.append("Recent hits (newest last):\n");
         int detailCount = Math.min(3, historySize);
         int detailStart = historySize < MAX_HISTORY
@@ -135,7 +131,6 @@ public class GeminiPvPEngine {
         return sb.toString();
     }
 
-    // ── Public API ────────────────────────────────────────────────────────────
 
     public static String getPvPAction(MinecraftClient client, PlayerEntity target, String context) {
         if (client.player == null || target == null) return "NONE";
@@ -145,10 +140,9 @@ public class GeminiPvPEngine {
         if (com.mrtrazan.minecraft.pvphelper.config.ModConfig.getInstance().geminiApiKey != null
             && !com.mrtrazan.minecraft.pvphelper.config.ModConfig.getInstance().geminiApiKey.isBlank()) {
             scheduleApiDecision(client, target, context);
-            return null; // async; result handled in callback
+            return null;
         }
 
-        // Fallback when no API key is configured
         double distance = client.player.distanceTo(target);
         float playerHealth = client.player.getHealth();
         if (playerHealth < 6.0f) return "USE_TOTEM";
@@ -156,12 +150,10 @@ public class GeminiPvPEngine {
         return "STRAFE_RIGHT";
     }
 
-    // ── Private helpers ───────────────────────────────────────────────────────
 
     private static void scheduleApiDecision(MinecraftClient client, PlayerEntity target, String context) {
         if (target == null || client.player == null) return;
 
-        // Dynamic polling: only skip if a request is still in-flight.
         if (requestInFlight.get()) return;
 
         long now = System.currentTimeMillis();
@@ -213,8 +205,6 @@ public class GeminiPvPEngine {
                 requestInFlight.set(false);
                 if (response == null || response.isBlank()) return;
                 String rawDecision = response.trim().toUpperCase();
-                // Strip any punctuation / extra text — keep only the keyword
-                // Must use a new effectively-final variable for use inside the lambda below
                 final String decision = rawDecision.split("[^A-Z_]")[0].trim();
                 ConversationManager.addAssistantMessage(decision);
                 client.execute(() -> {
@@ -229,7 +219,6 @@ public class GeminiPvPEngine {
             });
     }
 
-    // ── Combat actions ────────────────────────────────────────────────────────
 
     /**
      * Select the best available weapon in the hotbar and attack the target.
@@ -271,7 +260,6 @@ public class GeminiPvPEngine {
     }
 
     public static void executeStrafe(MinecraftClient client, PlayerEntity target, String direction) {
-        // Handled via keyboard simulation in DualAICoordinator
     }
 
     public static void executeRodCombo(MinecraftClient client, PlayerEntity target) {
@@ -293,13 +281,11 @@ public class GeminiPvPEngine {
     public static void executeUseCrystal(MinecraftClient client, PlayerEntity target) {
         if (client.player == null || target == null) return;
 
-        // Find end crystal in hotbar
         for (int i = 0; i < 9; i++) {
             String name = VersionCompat.getItemName(client.player.getInventory().getStack(i)).toLowerCase();
             if (name.contains("end_crystal") || name.contains("end crystal")) {
                 client.player.getInventory().selectedSlot = i;
 
-                // Place crystal at target's feet
                 BlockPos targetFeet = target.getBlockPos();
                 try {
                     net.minecraft.util.hit.BlockHitResult hitResult = new net.minecraft.util.hit.BlockHitResult(
@@ -314,7 +300,6 @@ public class GeminiPvPEngine {
                         hitResult
                     );
                 } catch (Exception e) {
-                    // Safe fallback — just swing
                     client.player.swingHand(net.minecraft.util.Hand.MAIN_HAND);
                 }
                 break;
@@ -332,11 +317,9 @@ public class GeminiPvPEngine {
             String name = VersionCompat.getItemName(client.player.getInventory().getStack(i)).toLowerCase();
             if (name.contains("mace")) {
                 client.player.getInventory().selectedSlot = i;
-                // Jump to build fall height for mace smash bonus
                 if (client.player.isOnGround()) {
                     client.options.jumpKey.setPressed(true);
                 }
-                // Attack while in air
                 if (!client.player.isOnGround() && client.player.getAttackCooldownProgress(0.5F) >= 0.8F) {
                     client.interactionManager.attackEntity(client.player, target);
                     client.player.swingHand(net.minecraft.util.Hand.MAIN_HAND);
@@ -352,13 +335,10 @@ public class GeminiPvPEngine {
     public static void executeElytraBoost(MinecraftClient client) {
         if (client.player == null) return;
 
-        // Look for elytra in inventory and try to equip it to chest slot (slot 6 in player inv = chest)
         for (int i = 0; i < client.player.getInventory().size(); i++) {
             String name = VersionCompat.getItemName(client.player.getInventory().getStack(i)).toLowerCase();
             if (name.contains("elytra")) {
-                // Swap elytra into chest armor slot via click
                 try {
-                    // Chest slot index = 6 in the combined screen handler
                     client.interactionManager.clickSlot(
                         client.player.currentScreenHandler.syncId,
                         i, 0,
@@ -370,7 +350,6 @@ public class GeminiPvPEngine {
             }
         }
 
-        // Fire a firework rocket from hotbar if in elytra
         for (int i = 0; i < 9; i++) {
             String name = VersionCompat.getItemName(client.player.getInventory().getStack(i)).toLowerCase();
             if (name.contains("firework") || name.contains("rocket")) {
@@ -407,7 +386,7 @@ public class GeminiPvPEngine {
         for (int i = 0; i < client.player.getInventory().size(); i++) {
             ItemStack stack = client.player.getInventory().getStack(i);
             if (VersionCompat.getItemName(stack).toLowerCase().contains("totem")) {
-                if (i < 9) { // hotbar
+                if (i < 9) {
                     client.player.getInventory().selectedSlot = i;
                     try {
                         client.player.networkHandler.sendPacket(new net.minecraft.network.packet.c2s.play.PlayerActionC2SPacket(
@@ -416,7 +395,7 @@ public class GeminiPvPEngine {
                             net.minecraft.util.math.Direction.DOWN
                         ));
                     } catch (Exception ignored) {}
-                } else { // main inventory
+                } else {
                     try {
                         client.interactionManager.clickSlot(
                             client.player.currentScreenHandler.syncId,

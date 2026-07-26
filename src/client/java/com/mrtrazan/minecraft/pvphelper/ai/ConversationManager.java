@@ -15,7 +15,7 @@ public class ConversationManager {
     private static final Deque<Message> messages = new ArrayDeque<>();
 
     public static class Message {
-        public final String role; // "user" or "assistant" or "system"
+        public final String role;
         public final String content;
 
         public Message(String role, String content) {
@@ -34,7 +34,6 @@ public class ConversationManager {
             net.minecraft.client.MinecraftClient client = net.minecraft.client.MinecraftClient.getInstance();
             ActionPermissionManager.scanAndProposeActions(client, content);
         } catch (Throwable t) {
-            // ignore if not running client thread / tests
         }
     }
 
