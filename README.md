@@ -1,10 +1,10 @@
-# PvP Helper ⚔️🤖
+# PvP Helper 
 
 A client-side Fabric mod (Minecraft 1.21.1) that brings dual AI models (**Gemini 2.0 Flash** & **ChatGPT**) straight into your PvP workflow. It provides real-time combat decision making, smooth aim tracking, automated emergency survival actions, and an optional client-side Copper Golem companion bot.
 
 ---
 
-## ✨ Features
+##  Features
 
 - **Dual AI Architecture**:
   - **Gemini 2.0 Flash**: Handles real-time combat tactics, range evaluation, moshpit round-robin targeting, mace smash setups, end crystal placements, and rod combos.
@@ -41,7 +41,7 @@ A client-side Fabric mod (Minecraft 1.21.1) that brings dual AI models (**Gemini
 
 ---
 
-## ⚙️ Configuration & API Keys
+##  Configuration & API Keys
 
 1. Press **Esc** -> **Mod Menu** -> Select **PvP Helper** -> Click **Settings** (or configure `config/pvp_helper_config.json`).
 2. Enter your API key(s):
@@ -52,7 +52,7 @@ A client-side Fabric mod (Minecraft 1.21.1) that brings dual AI models (**Gemini
 
 ---
 
-## 🛠️ Building from Source
+##  Building from Source
 
 ### Requirements
 - **JDK 21** or higher
@@ -74,6 +74,6 @@ The compiled mod file will be located in `build/libs/pvp-helper-1.21.1-1.0.0.jar
 
 ---
 
-## 📜 License
+##  License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
